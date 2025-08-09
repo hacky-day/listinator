@@ -19,6 +19,10 @@ export interface Entry {
   _dirty: boolean;
 }
 
+export interface Session {
+  uuid: string;
+}
+
 export type ContextmenuAction = {
   label: string;
   action: string;

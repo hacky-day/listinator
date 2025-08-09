@@ -27,4 +27,9 @@ func (s server) SetupRoutes(g *echo.Group) {
 
 	// types
 	g.GET("/types", s.typeList())
+
+	// Login, Logout and stuff
+	g.GET("/session", s.sessionGet())
+	g.POST("/session", s.sessionCreate())
+	g.DELETE("/session", s.sessionDelete())
 }

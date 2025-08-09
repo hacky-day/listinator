@@ -1,4 +1,4 @@
-import { type Entry, type List, type Type } from "@/types.ts";
+import { type Entry, type List, type Session, type Type } from "@/types.ts";
 
 export async function apiFetchJSON(url: string, options = {}) {
   const response = await fetch(url, options);
@@ -71,4 +71,34 @@ export async function apiDeleteEntry(entry: Entry): Promise<Entry> {
 export async function apiGetTypes(): Promise<Type[]> {
   const json = await apiFetchJSON(`/api/v1/types`);
   return json as Type[];
+}
+
+export async function apiCreateSession(username: string, password: string) {
+  const response = await fetch("api/v1/session", {
+    method: "POST",
+    body: JSON.stringify({
+      name: username,
+      password: password,
+    }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  if (!response.ok) {
+    throw new Error(`API Error, ${response.status}`);
+  }
+}
+
+export async function apiGetSession(): Promise<Session> {
+  const json = await apiFetchJSON("api/v1/session");
+  return json as Session;
+}
+
+export async function apiDeleteSession() {
+  const response = await fetch("api/v1/session", {
+    method: "DELETE",
+  });
+  if (!response.ok) {
+    throw new Error(`API Error, ${response.status}`);
+  }
 }

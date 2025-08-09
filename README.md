@@ -62,7 +62,7 @@ The application will be available at <http://localhost:8080>.
 4. Run the application:
 
    ```bash
-   ./listinator
+   LISTINATOR_SESSION_SECRET="secret" LISTINATOR_ADMIN_PASSWORD="secret" LISTINATOR_DATABASE_DIR=. ./listinator
    ```
 
 The application will be available at <http://localhost:8080>.
@@ -72,7 +72,7 @@ The application will be available at <http://localhost:8080>.
 ### Project Structure
 
 - `main.go` – Application entry point and server setup (Go)
-- `server/` – HTTP handlers and API routes (Go)
+- `api/` – HTTP handlers and API routes (Go)
 - `database/` – Database models and initialization (Go)
 - `frontend/` – Vue frontend (source code, build, assets)
 
@@ -115,6 +115,8 @@ The application will be available at <http://localhost:8080>.
 The application uses the following environment variable:
 
 - `LISTINATOR_DATABASE_DIR` - Directory where the SQLite database file will be stored (required)
+- `LISTINATOR_SESSION_SECRET` -
+- `LISTINATOR_ADMIN_PASSWORD` -
 
 ## License
 
