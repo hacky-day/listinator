@@ -11,3 +11,7 @@ export async function apiFetch(url, options = {}) {
   }
   return response.json();
 }
+
+export async function loggedIn() {
+  return (await fetch("api/v1/session")).ok;
+}

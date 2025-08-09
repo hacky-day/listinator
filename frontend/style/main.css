@@ -159,7 +159,10 @@ li input {
   cursor: pointer;
 }
 
-.button-menu {
+#button-menu {
+  background: var(--color-surface);
+  margin: 1svh 1svh 0svh 1svh;
+  border-radius: var(--border-radius);
   min-height: 60svh;
   flex-direction: column;
   display: flex;
@@ -168,9 +171,29 @@ li input {
   gap: 1em;
 }
 
+#button-menu button {
+  min-width: 10em;
+}
+
 #share-button {
   background: transparent;
   min-width: 0em;
   margin: 0em;
   padding: 0em;
+}
+
+#loginForm {
+  background: var(--color-surface);
+  margin: 1svh 1svh 0svh 1svh;
+  border-radius: var(--border-radius);
+  min-height: 60svh;
+  flex-direction: column;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1em;
+}
+
+#loginForm input {
+  padding: 0em 0.5em;
 }
