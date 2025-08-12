@@ -160,8 +160,7 @@ li input {
 }
 
 .button-menu {
-  background: var(--color-surface);
-  min-height: calc(100svh - 3.5em); /* minus header and padding */
+  min-height: 60svh;
   flex-direction: column;
   display: flex;
   justify-content: center;
