@@ -360,9 +360,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         return;
       }
       await navigator.clipboard.writeText(window.location.href);
-      alert(
-        "Share is not supported. URL was copied to the Clipboard instead.",
-      );
+      alert("Share is not supported. URL was copied to the Clipboard instead.");
     } catch (error) {
       showError(error, error);
     }

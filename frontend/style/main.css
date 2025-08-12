@@ -56,6 +56,10 @@ header {
   gap: 0.5em;
 }
 
+main {
+  padding: 0.5em;
+}
+
 header input {
   flex-grow: 1; /* max width possible */
 }
@@ -80,8 +84,6 @@ button {
   height: 2.5em;
   min-width: 2.5em;
   border-radius: var(--border-radius);
-  padding: 0em 1em;
-  margin: 0em;
   border: 0em;
   background: var(--color-accent);
   color: var(--color-text-inverted);
@@ -95,8 +97,8 @@ ul {
 }
 
 li {
-  padding: 0.1em 0.2em;
-  margin: 0.2em 0.8em;
+  padding: 0.1em 0em;
+  margin: 0.2em 0em;
   border-radius: var(--border-radius);
   display: flex;
   justify-content: space-between;
