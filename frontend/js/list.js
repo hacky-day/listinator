@@ -58,6 +58,11 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
+    // Do nothing, if menu is open.
+    if (document.querySelector(".context-menu") != null) {
+      return;
+    }
+
     // Get entries from server
     try {
       const json = await apiFetch(`/api/v1/entries?ListID=${listID}`);
