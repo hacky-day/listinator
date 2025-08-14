@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onMounted, ref, computed } from "vue";
 import { useRoute } from "vue-router";
 
 import { router } from "@/router.ts";
@@ -7,13 +7,34 @@ import { apiGetEntries, apiCreateEntry } from "@/api/api.ts";
 import { type Entry } from "@/type.ts";
 import DefaultLayout from "@/Layouts/DefaultLayout.vue";
 import Button from "@/Components/Button.vue";
-import EntryComponent from "@/Components/Entry.vue";
+import BuyEntry from "@/Components/BuyEntry.vue";
 
 const route = useRoute();
 const listID = route.params.id;
 
 const entries = ref<Entry[]>([]);
 const searchInput = ref<string>("");
+
+const activeSortedNotBoughtEntries = computed(() => {
+  return entries.value
+    .filter(
+      (entry) =>
+        !entry.bought &&
+        entry.Name.toLowerCase().includes(searchInput.value.toLowerCase()),
+    )
+    .sort((a, b) => {
+      // Sort by type
+      const typeCompare = a.TypeID.localeCompare(b.TypeID);
+      if (typeCompare !== 0) return typeCompare;
+
+      // Sort by name
+      return a.Name.localeCompare(b.Name);
+    });
+});
+
+const activeBoughtEntries = computed(() => {
+  return entries.value.filter((entry) => entry.bought);
+});
 
 async function getEntries() {
   // Get entries from server
@@ -34,6 +55,9 @@ async function createEntry() {
   } catch (error) {
     alert("unable to get entries:" + error);
   }
+
+  // Reset input
+  searchInput.value = "";
 }
 
 onMounted(async () => {
@@ -60,6 +84,7 @@ onMounted(async () => {
       </button>
       <input
         v-model="searchInput"
+        @keydown.enter="createEntry"
         type="search"
         autocomplete="off"
         placeholder="Search"
@@ -68,14 +93,20 @@ onMounted(async () => {
     </template>
     <template v-slot:main>
       <ul>
-        <EntryComponent
-          v-for="entry in entries"
+        <BuyEntry
+          v-for="entry in activeSortedNotBoughtEntries"
           :entry="entry"
           :key="entry.id"
-        ></EntryComponent>
+        ></BuyEntry>
       </ul>
-      <hr />
-      <ul id="boughtList"></ul>
+      <hr v-if="activeBoughtEntries.len > 0" />
+      <ul>
+        <BuyEntry
+          v-for="entry in activeBoughtEntries"
+          :entry="entry"
+          :key="entry.id"
+        ></BuyEntry>
+      </ul>
     </template>
   </DefaultLayout>
 </template>
