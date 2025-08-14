@@ -5,14 +5,14 @@ import (
 	"os"
 	"path"
 
+	"github.com/shaardie/listinator/api/v1/server"
 	"github.com/shaardie/listinator/database"
-	"github.com/shaardie/listinator/server"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
 
-//go:embed frontend/*
+//go:embed frontend/dist/*
 var frontendFS embed.FS
 
 func main() {
@@ -28,16 +28,13 @@ func main() {
 	e := echo.New()
 	e.Use(middleware.Logger())
 
-	// serve frontend directory, if it exists and otherwise servce the files
-	// embeded in the binary. This makes development easier
-	if _, err := os.Stat("frontend"); os.IsNotExist(err) {
-		e.StaticFS("/", echo.MustSubFS(frontendFS, "frontend"))
-	} else {
-		e.Static("/", "frontend")
-	}
+	// API V1
+	apiV1 := e.Group("/api/v1")
+	sV1 := server.New(db)
+	sV1.SetupRoutes(apiV1)
 
-	s := server.New(db)
-	s.SetupRoutes(e)
+	// Embeded Frontend
+	e.StaticFS("/", echo.MustSubFS(frontendFS, "frontend/dist"))
 
 	e.Logger.Fatal(e.Start("0.0.0.0:8080"))
 }

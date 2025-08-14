@@ -1,101 +1,118 @@
 # Listinator
 
-A simple web-based list management application perfect for shopping lists, to-do lists, or any kind of item tracking. Built with Go and featuring a clean, intuitive interface.
+A simple web-based list management application perfect for shopping lists, to-do lists, or any kind of item tracking. Backend built with Go, modern frontend powered by Vue.
 
 ## Features
 
-- Web interface for managing shopping lists and to-do lists
+- Web interface for managing shopping and to-do lists
 - Mark items as bought/completed
 - Search functionality
-- Docker support
+- Docker and Docker Compose support
 
 ## Requirements
 
 - Go 1.24.3 or later
+- Node.js 18+ and npm (for frontend development)
 
 ## Installation
 
-### Option 1: Build from Source
+### Option 1: Docker Compose (Recommended)
 
 1. Clone the repository:
-```bash
-git clone https://github.com/hacky-day/listinator.git
-cd listinator
-```
 
-2. Build the application:
-```bash
-go build .
-```
+   ```bash
+   git clone https://github.com/hacky-day/listinator.git
+   cd listinator
+   ```
 
-3. Set the database directory environment variable:
-```bash
-export LISTINATOR_DATABASE_DIR=/path/to/your/data/directory
-```
+2. Run with Docker Compose:
+
+   ```bash
+   docker-compose up
+   ```
+
+The application will be available at <http://localhost:8080>.
+
+### Option 2: Build from Source
+
+1. Clone the repository:
+
+   ```bash
+   git clone https://github.com/hacky-day/listinator.git
+   cd listinator
+   ```
+
+2. **Build the frontend:**
+
+   ```bash
+   cd frontend
+   npm install
+   npm run build
+   cd ..
+   ```
+
+   The built frontend will be placed in the `frontend/dist` directory and served as static files by the Go backend.
+
+3. **Build the backend:**
+
+   ```bash
+   go build
+   ```
 
 4. Run the application:
-```bash
-./listinator
-```
 
-### Option 2: Docker Compose (Recommended)
+   ```bash
+   ./listinator
+   ```
 
-1. Clone the repository:
-```bash
-git clone https://github.com/hacky-day/listinator.git
-cd listinator
-```
-
-2. Run with docker-compose:
-```bash
-docker-compose up
-```
-
-This will:
-- Build and start the application
-- Map port 8080 to your host  
-- Create a persistent volume for data storage in `./data`
-
-You can also run with Docker directly:
-```bash
-docker run -p 8080:8080 -v $(pwd)/data:/var/lib/listinator -e LISTINATOR_DATABASE_DIR=/var/lib/listinator ghcr.io/hacky-day/listinator:latest
-```
-
-The application will be available at http://localhost:8080
+The application will be available at <http://localhost:8080>.
 
 ## Development
 
 ### Project Structure
 
-- `main.go` - Application entry point and server setup
-- `server/` - HTTP handlers and API routes
-- `database/` - Database models and initialization
-- `frontend/` - Static web assets (HTML, CSS, JavaScript)
+- `main.go` – Application entry point and server setup (Go)
+- `server/` – HTTP handlers and API routes (Go)
+- `database/` – Database models and initialization (Go)
+- `frontend/` – Vue frontend (source code, build, assets)
 
-### Development Setup
+### Frontend Development (Vue)
 
-1. Clone the repository and install dependencies:
-```bash
-git clone https://github.com/hacky-day/listinator.git
-cd listinator
-go mod download
-```
+1. Navigate to the frontend directory:
 
-2. For development, the application will serve static files from the `frontend/` directory instead of embedded files.
+   ```bash
+   cd frontend
+   ```
 
-3. Set environment variables:
-```bash
-export LISTINATOR_DATABASE_DIR=./data
-```
+2. Install dependencies:
 
-4. Run the development server:
-```bash
-go run .
-```
+   ```bash
+   npm install
+   ```
+
+3. Start the development server:
+
+   ```bash
+   npm run dev
+   ```
+
+   The frontend will be available at <http://localhost:5173> (default). The backend needs also to be starten and will be proxied by the frontend.
+
+### Backend Development
+
+1. Make sure to have the frontend build and present in `frontend/dist`
+
+2. Just build with
+
+   ```bash
+   go build
+   ```
+
+   The frontend and backend will be served at <http://localhost:8080>.
 
 ## Configuration
 
-The application uses the following environment variables:
+The application uses the following environment variable:
 
 - `LISTINATOR_DATABASE_DIR` - Directory where the SQLite database file will be stored (required)
 
