@@ -1,4 +1,4 @@
-import { type Entry, type List } from "@/types.ts";
+import { type Entry, type List, type Type } from "@/types.ts";
 
 export async function apiFetchJSON(url: string, options = {}) {
   const response = await fetch(url, options);
@@ -56,4 +56,9 @@ export async function apiUpdateEntry(entry: Entry): Promise<Entry> {
     },
   });
   return json as Entry;
+}
+
+export async function apiGetTypes(): Promise<Type[]> {
+  const json = await apiFetchJSON(`/api/v1/types`);
+  return json as Type[];
 }
