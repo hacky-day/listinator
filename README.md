@@ -1,117 +1,240 @@
-# Listinator
+# Listinator - Vue Branch
 
-A simple web-based list management application perfect for shopping lists, to-do lists, or any kind of item tracking. Built with Go and featuring a clean, intuitive interface.
+A modern web-based list management application perfect for shopping lists, to-do lists, or any kind of item tracking. Built with **Go** backend and **Vue.js 3 + TypeScript** frontend, featuring a clean and intuitive interface with modern build tooling.
 
-## Features
+> **Note**: This is the **Vue branch** - a complete rewrite of the frontend from vanilla JavaScript to Vue.js 3 with TypeScript. For the original vanilla JS version, see the `main` branch.
 
-- Web interface for managing shopping lists and to-do lists
-- Mark items as bought/completed
-- Search functionality
-- Docker support
+## ✨ Features
 
-## Requirements
+- **Modern Vue.js Frontend**: Built with Vue 3, TypeScript, and Vite for fast development
+- **Responsive Design**: Works seamlessly on desktop and mobile devices
+- **List Management**: Create and manage multiple shopping lists and to-do lists
+- **Smart Entry Management**: Add, edit, delete, and mark items as bought/completed
+- **Category System**: Organize items with pre-defined types and emoji icons (🍎 fruit, 🥦 vegetable, etc.)
+- **Real-time Search**: Filter items instantly as you type
+- **Share Lists**: Generate shareable URLs for collaborative list management
+- **Offline Capable**: Progressive Web App features for offline usage
+- **Docker Support**: Easy deployment with Docker and docker-compose
 
-- Go 1.24.3 or later
+## 🛠️ Technology Stack
 
-## Installation
+### Backend
+- **Go 1.24.3+** with Echo web framework
+- **SQLite** database with GORM ORM
+- **RESTful API** with comprehensive documentation
+- **UUID-based** primary keys for all entities
 
-### Option 1: Build from Source
+### Frontend
+- **Vue.js 3** with Composition API
+- **TypeScript** for type safety
+- **Vite** for fast builds and hot reload
+- **CSS Grid/Flexbox** for responsive layouts
+- **Progressive Web App** capabilities
 
-1. Clone the repository:
+### Build System
+- **Comprehensive Makefile** with 15+ commands
+- **Automated dependency management**
+- **Production optimizations**
+- **Embedded frontend** assets in Go binary
+
+## 📋 Requirements
+
+- **Go 1.24.3 or later**
+- **Node.js 20.19.0+ or 22.12.0+**
+- **NPM 10.8.2+**
+
+## 🚀 Quick Start
+
+### Option 1: Using Make (Recommended)
+
+1. **Clone and setup:**
 ```bash
 git clone https://github.com/hacky-day/listinator.git
 cd listinator
+git checkout vue  # Switch to Vue branch
 ```
 
-2. Build the application:
+2. **Install dependencies and build:**
 ```bash
+make deps          # Install both Go and Node.js dependencies
+make build         # Build frontend and backend
+```
+
+3. **Run the application:**
+```bash
+export LISTINATOR_DATABASE_DIR=./data
+make dev          # Start development server
+```
+
+Visit http://localhost:8080 to use the application.
+
+### Option 2: Manual Build
+
+1. **Backend setup:**
+```bash
+go mod download
 go build .
 ```
 
-3. Set the database directory environment variable:
+2. **Frontend setup:**
 ```bash
-export LISTINATOR_DATABASE_DIR=/path/to/your/data/directory
+cd frontend
+npm install
+npm run build
+cd ..
 ```
 
-4. Run the application:
+3. **Run:**
 ```bash
+export LISTINATOR_DATABASE_DIR=./data
 ./listinator
 ```
 
-### Option 2: Docker Compose (Recommended)
+### Option 3: Docker (Production)
 
-1. Clone the repository:
 ```bash
-git clone https://github.com/hacky-day/listinator.git
-cd listinator
+docker-compose up --build
 ```
 
-2. Run with docker-compose:
+Or with Docker directly:
 ```bash
-docker-compose up
+docker build -t listinator .
+docker run -p 8080:8080 -v $(pwd)/data:/var/lib/listinator -e LISTINATOR_DATABASE_DIR=/var/lib/listinator listinator
 ```
 
-This will:
-- Build and start the application
-- Map port 8080 to your host  
-- Create a persistent volume for data storage in `./data`
+## 🔧 Development
 
-You can also run with Docker directly:
+### Available Make Commands
+
 ```bash
-docker run -p 8080:8080 -v $(pwd)/data:/var/lib/listinator -e LISTINATOR_DATABASE_DIR=/var/lib/listinator ghcr.io/hacky-day/listinator:latest
+make help          # Show all available commands
+make deps          # Install all dependencies
+make dev           # Start development server
+make dev-frontend  # Start Vue dev server with hot reload
+make build         # Build everything for production
+make clean         # Clean build artifacts
+make lint          # Run linters for Go and TypeScript
+make test          # Run tests
+make check-parity  # Compare features with main branch
 ```
-
-The application will be available at http://localhost:8080
-
-## Development
 
 ### Project Structure
 
-- `main.go` - Application entry point and server setup
-- `server/` - HTTP handlers and API routes
-- `database/` - Database models and initialization
-- `frontend/` - Static web assets (HTML, CSS, JavaScript)
-
-### Development Setup
-
-1. Clone the repository and install dependencies:
-```bash
-git clone https://github.com/hacky-day/listinator.git
-cd listinator
-go mod download
+```
+├── main.go              # Application entry point
+├── api/v1/server/       # HTTP handlers and API routes
+├── database/            # Database models and initialization  
+├── frontend/            # Vue.js application
+│   ├── src/            # Vue components and TypeScript
+│   ├── public/         # Static assets
+│   └── dist/           # Built frontend (auto-generated)
+├── Makefile            # Build automation
+└── docker-compose.yaml # Container orchestration
 ```
 
-2. For development, the application will serve static files from the `frontend/` directory instead of embedded files.
+### API Endpoints
 
-3. Set environment variables:
+All endpoints are prefixed with `/api/v1/`:
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET    | `/entries?ListID={uuid}` | List entries for a specific list |
+| POST   | `/entries` | Create a new entry |
+| PUT    | `/entries/{id}` | Update an existing entry |
+| DELETE | `/entries/{id}` | Delete an entry |
+| POST   | `/lists` | Create a new list |
+| GET    | `/types` | Get all available item types |
+
+### Development Workflow
+
+1. **Start backend with hot reload:**
 ```bash
-export LISTINATOR_DATABASE_DIR=./data
+make dev
 ```
 
-4. Run the development server:
+2. **Start frontend dev server (separate terminal):**
 ```bash
-go run .
+make dev-frontend
 ```
 
-## Configuration
+3. **Make changes to Vue components** in `frontend/src/`
+4. **Changes auto-reload** in your browser
+5. **Build for production:**
+```bash
+make build-production
+```
 
-The application uses the following environment variables:
+## 📊 Feature Parity with Main Branch
 
-- `LISTINATOR_DATABASE_DIR` - Directory where the SQLite database file will be stored (required)
+| Feature | Main Branch (Vanilla JS) | Vue Branch | Status |
+|---------|-------------------------|------------|---------|
+| List Management | ✓ | ✓ | ✅ Full parity |
+| Entry CRUD Operations | ✓ | ✓ | ✅ Full parity |
+| Search/Filter | ✓ | ✓ | ✅ Full parity |
+| Item Categories | ✓ | ✓ | ✅ Full parity |
+| Share Functionality | ✓ | ✓ | ✅ Full parity |
+| Responsive Design | ✓ | ✓ | ✅ Enhanced |
+| Build System | ❌ | ✓ | ✅ New feature |
+| Type Safety | ❌ | ✓ | ✅ New feature |
+| Hot Reload | ❌ | ✓ | ✅ New feature |
+| Component Architecture | ❌ | ✓ | ✅ New feature |
 
-## License
+## 🔧 Configuration
+
+### Environment Variables
+
+- `LISTINATOR_DATABASE_DIR` - **Required**. Directory where the SQLite database file will be stored
+
+### Database
+
+- **SQLite** database with automatic migrations
+- **UUID primary keys** for all entities
+- **Soft deletes** with GORM
+- **Pre-seeded item types** with emoji icons
+
+## 🐳 Docker
+
+### Development
+```bash
+docker-compose up --build
+```
+
+### Production
+```bash
+docker build -t listinator .
+docker run -p 8080:8080 -e LISTINATOR_DATABASE_DIR=/data listinator
+```
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch from `vue` branch: `git checkout -b feature/amazing-feature`
+3. Make your changes
+4. Run tests and linters: `make lint test`
+5. Commit your changes: `git commit -m 'Add some amazing feature'`
+6. Push to the branch: `git push origin feature/amazing-feature`
+7. Open a Pull Request against the `vue` branch
+
+### Development Guidelines
+
+- Use TypeScript for all frontend code
+- Follow Vue 3 Composition API patterns
+- Add appropriate Go documentation comments
+- Update tests for new functionality
+- Use the provided Makefile for consistent builds
+
+## 📝 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Contributing
+## 📞 Support
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Make your changes
-4. Commit your changes (`git commit -m 'Add some amazing feature'`)
-5. Push to the branch (`git push origin feature/amazing-feature`)
-6. Open a Pull Request
+If you encounter any issues or have questions:
 
-## Support
+1. Check the [Issues](https://github.com/hacky-day/listinator/issues) page
+2. Run `make help` for available commands
+3. Open a new issue with detailed information
 
-If you encounter any issues or have questions, please open an issue on GitHub.
+---
+
+**Vue Branch Enhancements**: Modern frontend, TypeScript safety, component architecture, comprehensive build system, and improved developer experience.
