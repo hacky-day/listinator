@@ -37,7 +37,7 @@ async function login(event: Event) {
   </DefaultLayout>
 </template>
 
-<style>
+<style scoped>
 #loginForm {
   background: var(--color-surface);
   margin: 1svh 1svh 0svh 1svh;

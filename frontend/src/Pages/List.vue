@@ -218,31 +218,9 @@ onMounted(() => {
   </DefaultLayout>
 </template>
 
-<style>
+<style scoped>
 hr {
   color: var(--color-primary);
   margin: 0.5em 1em;
-}
-
-header input {
-  flex-grow: 1;
-  /* max width possible */
-}
-
-input {
-  height: 2.5em;
-  box-sizing: border-box;
-  padding: 0.1em 0.2em;
-  border-radius: var(--border-radius);
-  color: var(--color-text);
-  border: 0.1em solid var(--color-border);
-  background-color: var(--color-surface);
-}
-
-ul {
-  /* no bullet points */
-  list-style: none;
-  padding: 0em;
-  margin: 0em;
 }
 </style>

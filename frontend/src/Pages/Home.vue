@@ -53,6 +53,7 @@ onMounted(async () => {
       <VerticalMenu v-if="loaded">
         <Button @click="listAsGuest">New List as Guest</Button>
         <LinkButton v-if="!loggedIn" to="/login">Login</LinkButton>
+        <LinkButton v-if="loggedIn" to="/type">Manage Types</LinkButton>
         <Button v-if="loggedIn" @click="logout">Logout</Button>
       </VerticalMenu>
     </template>
