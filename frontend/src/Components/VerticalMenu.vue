@@ -2,7 +2,7 @@
   <div class="vertical-menu"><slot></slot></div>
 </template>
 
-<style>
+<style scoped>
 .vertical-menu {
   min-height: 60svh;
   flex-direction: column;

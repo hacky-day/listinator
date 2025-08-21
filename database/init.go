@@ -43,24 +43,30 @@ func Init(dsn string) (*gorm.DB, error) {
 		}
 	}
 
-	// types to database
-	types := []Type{
-		{Name: "fruit", Icon: "🍎"},
-		{Name: "vegetable", Icon: "🥦"},
-		{Name: "drink", Icon: "🍹"},
-		{Name: "meat", Icon: "🍖"},
-		{Name: "snack", Icon: "🍿"},
-		{Name: "dairy", Icon: "🧀"},
-		{Name: "bread", Icon: "🥖"},
-		{Name: "condiment", Icon: "🧂"},
-		{Name: "frozen", Icon: "❄️"},
-		{Name: "canned", Icon: "🥫"},
-		{Name: "spice", Icon: "🌶️"},
-		{Name: "unknown", Icon: "🤷‍♀️"},
+	// Add default types to database, if none are present
+	var count int64
+	if err := db.Model(&Type{}).Count(&count).Error; err != nil {
+		return nil, fmt.Errorf("unable to get any type from database, %w", err)
 	}
-	for _, t := range types {
-		if err := db.Save(&t).Error; err != nil {
-			return nil, fmt.Errorf("unable to create default type '%s' in database, %w", t.Name, err)
+	if count == 0 {
+		types := []Type{
+			{Name: "fruit", Icon: "🍎"},
+			{Name: "vegetable", Icon: "🥦"},
+			{Name: "drink", Icon: "🍹"},
+			{Name: "meat", Icon: "🍖"},
+			{Name: "snack", Icon: "🍿"},
+			{Name: "dairy", Icon: "🧀"},
+			{Name: "bread", Icon: "🥖"},
+			{Name: "condiment", Icon: "🧂"},
+			{Name: "frozen", Icon: "❄️"},
+			{Name: "canned", Icon: "🥫"},
+			{Name: "spice", Icon: "🌶️"},
+			{Name: "unknown", Icon: "🤷‍♀️"},
+		}
+		for _, t := range types {
+			if err := db.Save(&t).Error; err != nil {
+				return nil, fmt.Errorf("unable to create default type '%s' in database, %w", t.Name, err)
+			}
 		}
 	}
 

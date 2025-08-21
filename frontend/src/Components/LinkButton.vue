@@ -10,7 +10,7 @@ const props = defineProps({
   </router-link>
 </template>
 
-<style>
+<style scoped>
 .link-button {
   text-align: center;
   text-decoration: None;

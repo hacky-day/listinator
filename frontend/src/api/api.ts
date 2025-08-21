@@ -73,6 +73,43 @@ export async function apiGetTypes(): Promise<Type[]> {
   return json as Type[];
 }
 
+export async function apiCreateType(name: string): Promise<Type> {
+  const json = await apiFetchJSON("/api/v1/type", {
+    method: "POST",
+    body: JSON.stringify({
+      Name: name,
+    }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  return json as Type;
+}
+
+export async function apiUpdateType(type: Type): Promise<Type> {
+  const json = await apiFetchJSON(`/api/v1/type/${type.Name}`, {
+    method: "PUT",
+    body: JSON.stringify({
+      Icon: type.Icon,
+      Priority: type.Priority,
+    }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  return json as Type;
+}
+
+export async function apiDeleteType(type: Type): Promise<Type> {
+  const json = await apiFetchJSON(`/api/v1/entries/${type.Name}`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  return json as Type;
+}
+
 export async function apiCreateSession(username: string, password: string) {
   const response = await fetch("api/v1/session", {
     method: "POST",

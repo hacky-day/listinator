@@ -34,6 +34,9 @@ func (s server) SetupRoutes(g *echo.Group) {
 
 	// types
 	g.GET("/types", s.typeList())
+	g.POST("/types", s.sessionMiddleware(s.typeCreate()))
+	g.PUT("/types/:Name", s.sessionMiddleware(s.typeUpdate()))
+	g.DELETE("/types:Name", s.sessionMiddleware(s.typeDelete()))
 
 	// Login, Logout and stuff
 	g.GET("/session", s.sessionMiddleware(s.sessionGet()))
