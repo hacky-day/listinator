@@ -1,7 +1,7 @@
 FROM node:24.6.0-bookworm-slim AS npm-build
 WORKDIR /frontend
 COPY frontend ./
-RUN npm run build
+RUN npm install && npm run build
 
 FROM golang:1.24-bookworm AS go-build
 WORKDIR /app
