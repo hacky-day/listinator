@@ -25,7 +25,7 @@ type User struct {
 	Model
 
 	Name         string `gorm:"unique;not null"`
-	PasswordHash string
+	PasswordHash string `json:"-"`
 	IsAdmin      bool
 }
 

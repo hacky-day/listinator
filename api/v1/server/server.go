@@ -29,7 +29,7 @@ func (s server) SetupRoutes(g *echo.Group) {
 	g.GET("/types", s.typeList())
 
 	// Login, Logout and stuff
-	g.GET("/session", s.sessionGet())
+	g.GET("/session", s.sessionMiddleware(s.sessionGet()))
 	g.POST("/session", s.sessionCreate())
 	g.DELETE("/session", s.sessionDelete())
 }
