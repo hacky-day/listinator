@@ -25,6 +25,19 @@ func (s server) typeCreate() echo.HandlerFunc {
 		Priority int    `json:"Priority"`
 	}
 	return func(c echo.Context) error {
+		// Only admins allowed
+		userAny := c.Get(userKey)
+		if userAny == nil {
+			return echo.ErrUnauthorized
+		}
+		user, ok := userAny.(*database.User)
+		if !ok {
+			return echo.ErrInternalServerError.SetInternal(fmt.Errorf("wrong type %T context", userAny))
+		}
+		if !user.IsAdmin {
+			return echo.ErrUnauthorized
+		}
+
 		var i input
 		if err := c.Bind(&i); err != nil {
 			return echo.ErrBadRequest.SetInternal(err)
@@ -50,6 +63,19 @@ func (s server) typeUpdate() echo.HandlerFunc {
 		Priority int    `json:"Priority"`
 	}
 	return func(c echo.Context) error {
+		// Only admins allowed
+		userAny := c.Get(userKey)
+		if userAny == nil {
+			return echo.ErrUnauthorized
+		}
+		user, ok := userAny.(*database.User)
+		if !ok {
+			return echo.ErrInternalServerError.SetInternal(fmt.Errorf("wrong type %T context", userAny))
+		}
+		if !user.IsAdmin {
+			return echo.ErrUnauthorized
+		}
+
 		var i input
 		if err := c.Bind(&i); err != nil {
 			return echo.ErrBadRequest.SetInternal(err)
@@ -78,6 +104,19 @@ func (s server) typeDelete() echo.HandlerFunc {
 		Name string `param:"Name"`
 	}
 	return func(c echo.Context) error {
+		// Only admins allowed
+		userAny := c.Get(userKey)
+		if userAny == nil {
+			return echo.ErrUnauthorized
+		}
+		user, ok := userAny.(*database.User)
+		if !ok {
+			return echo.ErrInternalServerError.SetInternal(fmt.Errorf("wrong type %T context", userAny))
+		}
+		if !user.IsAdmin {
+			return echo.ErrUnauthorized
+		}
+
 		var i input
 		if err := c.Bind(&i); err != nil {
 			return echo.ErrBadRequest.SetInternal(err)

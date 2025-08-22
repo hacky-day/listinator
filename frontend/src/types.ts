@@ -5,6 +5,7 @@ export interface List {
 export interface Type {
   Name: string;
   Icon: string;
+  Priority: number;
 }
 
 export interface Entry {

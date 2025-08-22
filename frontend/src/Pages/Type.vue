@@ -36,12 +36,7 @@ onMounted(() => {
               v-model="type.Icon"
               placeholder="Icon"
             />
-            <input
-              type="text"
-              class="name-input"
-              v-model="type.Name"
-              placeholder="Name"
-            />
+            <div>{{ type.Name }}</div>
           </div>
           <div>
             <Button>↑</Button>
