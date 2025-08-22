@@ -1,4 +1,4 @@
-import { type Entry, type List, type Session, type Type } from "@/types.ts";
+import { type Entry, type List, type User, type Type } from "@/types.ts";
 
 export async function apiFetchJSON(url: string, options = {}) {
   const response = await fetch(url, options);
@@ -89,9 +89,9 @@ export async function apiCreateSession(username: string, password: string) {
   }
 }
 
-export async function apiGetSession(): Promise<Session> {
+export async function apiGetSession(): Promise<User> {
   const json = await apiFetchJSON("api/v1/session");
-  return json as Session;
+  return json as User;
 }
 
 export async function apiDeleteSession() {

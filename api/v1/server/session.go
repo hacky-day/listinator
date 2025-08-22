@@ -1,8 +1,10 @@
 package server
 
 import (
+	"errors"
 	"fmt"
 
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/shaardie/listinator/database"
 	"golang.org/x/crypto/bcrypt"
@@ -14,6 +16,7 @@ import (
 const (
 	sessionKey = "listinator_session"
 	uuidKey    = "uuid"
+	userKey    = "user"
 )
 
 func (s server) sessionCreate() echo.HandlerFunc {
@@ -59,17 +62,55 @@ func (s server) sessionCreate() echo.HandlerFunc {
 	}
 }
 
-func (s server) sessionGet() echo.HandlerFunc {
+func (s server) sessionMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
+		// Get uuid from session cookie
 		sess, err := session.Get(sessionKey, c)
 		if err != nil {
 			return echo.ErrInternalServerError.SetInternal(fmt.Errorf("unable to get session, %w", err))
 		}
-		uuid, ok := sess.Values[uuidKey]
+		uuidAny, ok := sess.Values[uuidKey]
 		if !ok {
 			return echo.ErrUnauthorized
 		}
-		return c.JSON(200, map[string]any{"uuid": uuid})
+
+		// Check if string
+		uuidStr, ok := uuidAny.(string)
+		if !ok {
+			return echo.ErrUnauthorized.SetInternal(errors.New("uuid in cookie is no string"))
+		}
+
+		// Parse UUID
+		uuidObj, err := uuid.Parse(uuidStr)
+		if err != nil {
+			return echo.ErrUnauthorized.SetInternal(fmt.Errorf("unable to parse uuid, %w", err))
+		}
+
+		u := database.User{
+			Model: database.Model{
+				ID: uuidObj,
+			},
+		}
+		if err := s.db.First(&u).Error; err != nil {
+			return echo.ErrUnauthorized.SetInternal(fmt.Errorf("unable to get user from database, %w", err))
+		}
+
+		c.Set(userKey, &u)
+		return next(c)
+	}
+}
+
+func (s server) sessionGet() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		userAny := c.Get(userKey)
+		if userAny == nil {
+			return echo.ErrUnauthorized
+		}
+		user, ok := userAny.(*database.User)
+		if !ok {
+			return echo.ErrInternalServerError.SetInternal(fmt.Errorf("wrong type %T context", userAny))
+		}
+		return c.JSON(200, user)
 	}
 }
 
