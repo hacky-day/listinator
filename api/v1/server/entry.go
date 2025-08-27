@@ -1,6 +1,7 @@
 package server
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -58,6 +59,10 @@ func (s server) entryCreate() echo.HandlerFunc {
 			return echo.ErrInternalServerError.SetInternal(err)
 		}
 
+		s.entryPubSub.Publish(e.ListID, entryEvent{
+			Action: "create",
+			Entry:  e,
+		})
 		return c.JSON(http.StatusCreated, e)
 	}
 }
@@ -77,13 +82,8 @@ func (s server) entryUpdate() echo.HandlerFunc {
 			return echo.ErrBadRequest.SetInternal(err)
 		}
 
-		e := database.Entry{
-			Model: database.Model{
-				ID: i.ID,
-			},
-		}
-		if err := s.db.First(&e).Error; err != nil {
-			// TODO: handle different errors
+		var e database.Entry
+		if err := s.db.First(&e, i.ID).Error; err != nil {
 			return echo.NotFoundHandler(c)
 		}
 		e.Name = i.Name
@@ -96,6 +96,10 @@ func (s server) entryUpdate() echo.HandlerFunc {
 			return echo.ErrInternalServerError.SetInternal(err)
 		}
 
+		s.entryPubSub.Publish(e.ListID, entryEvent{
+			Action: "update",
+			Entry:  e,
+		})
 		return c.JSON(http.StatusOK, e)
 	}
 }
@@ -110,15 +114,59 @@ func (s server) entryDelete() echo.HandlerFunc {
 			return echo.ErrBadRequest.SetInternal(err)
 		}
 
-		e := database.Entry{
-			Model: database.Model{
-				ID: i.ID,
-			},
-		}
-		if err := s.db.Delete(&e).Error; err != nil {
-			// TODO: handle different errors
+		var e database.Entry
+		if err := s.db.First(&e, i.ID).Error; err != nil {
 			return echo.NotFoundHandler(c)
 		}
+		if err := s.db.Delete(&e).Error; err != nil {
+			return echo.ErrInternalServerError.SetInternal(fmt.Errorf("unable to delete entry %v, %w", e, err))
+		}
+		s.entryPubSub.Publish(e.ListID, entryEvent{
+			Action: "delete",
+			Entry:  e,
+		})
 		return c.JSON(http.StatusOK, e)
+	}
+}
+
+type entryEvent struct {
+	Action string
+	Entry  database.Entry
+}
+
+func (s server) entryGetEvents() echo.HandlerFunc {
+	type input struct {
+		ListID uuid.UUID `query:"ListID"`
+	}
+	return func(c echo.Context) error {
+		var i input
+		if err := c.Bind(&i); err != nil {
+			return echo.ErrBadRequest.SetInternal(err)
+		}
+
+		id, ch, err := s.entryPubSub.Subscribe(i.ListID)
+		if err != nil {
+			return echo.ErrInternalServerError.SetInternal(fmt.Errorf("unable to subscribe, %w", err))
+		}
+		defer s.entryPubSub.Unsubscribe(i.ListID, id)
+
+		w := c.Response()
+		w.Header().Set("Content-Type", "text/event-stream")
+		w.Header().Set("Cache-Control", "no-cache")
+		w.Header().Set("Connection", "keep-alive")
+		for {
+			select {
+			case <-c.Request().Context().Done():
+				return nil
+			case ee := <-ch:
+				entry, err := json.Marshal(ee.Entry)
+				if err != nil {
+					return echo.ErrInternalServerError.SetInternal(fmt.Errorf("failed to marshal JSON, %w", err))
+				}
+				fmt.Fprintf(w, "event: %v\n", ee.Action)
+				fmt.Fprintf(w, "data: %v\n\n", string(entry))
+				w.Flush()
+			}
+		}
 	}
 }
