@@ -9,7 +9,6 @@ defineProps<{
 
 const emit = defineEmits<{
   (e: "update"): void;
-  (e: "changing", value: boolean): void;
 }>();
 
 const entry = defineModel<Entry>({ required: true });
@@ -23,12 +22,7 @@ function onClick() {
 <template>
   <li>
     <div class="entryAttributes">
-      <select
-        v-model="entry.TypeID"
-        @change="$emit('update')"
-        @focus="$emit('changing', true)"
-        @blur="$emit('changing', false)"
-      >
+      <select v-model="entry.TypeID" @change="$emit('update')">
         <option v-for="type in types" :key="type.Name" :value="type.Name">
           {{ type.Icon }}
         </option>
@@ -36,15 +30,7 @@ function onClick() {
       <div>{{ entry.Name }}</div>
     </div>
     <div class="entryAttributes">
-      <input
-        v-model="entry.Number"
-        type="text"
-        @focus="$emit('changing', true)"
-        @blur="
-          $emit('update');
-          $emit('changing', false);
-        "
-      />
+      <input v-model="entry.Number" type="text" @blur="$emit('update')" />
       <Button @click="onClick">{{ entry.Bought ? "+" : "✓" }}</Button>
     </div>
   </li>

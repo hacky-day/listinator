@@ -14,9 +14,6 @@ export interface Entry {
   Number: string;
   ListID: string;
   TypeID: string;
-
-  // Helper
-  _dirty: boolean;
 }
 
 export interface User {

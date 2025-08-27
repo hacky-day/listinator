@@ -42,7 +42,6 @@ function contextmenuShow(event: MouseEvent, entry: Entry) {
   }
   contextmenuVisible.value = true;
   contextmenuTarget.value = entry;
-  entry._dirty = true;
   contextmenuX.value = event.pageX;
   contextmenuY.value = event.pageY;
   document.addEventListener("click", contextmenuHandleOutsideClick);
@@ -61,7 +60,6 @@ function contextmenuHandleOutsideClick(event: Event) {
 function contextmenuClose() {
   contextmenuVisible.value = false;
   if (contextmenuTarget.value !== undefined) {
-    contextmenuTarget.value._dirty = false;
     contextmenuTarget.value = undefined;
   }
   contextmenuX.value = 0;
@@ -115,71 +113,13 @@ async function getTypes() {
   }
 }
 
-async function getEntries() {
-  // Get entries from server
-  const freshEntries = await apiGetEntries(listID).catch((error) => {
-    // if it's the first failure, show a message and do not remove it automatically
-    if (failureMessage === undefined) {
-      failureMessage = show("error", "Unable to load entries", {
-        logMessage: error,
-        autoHide: false,
-      }).id;
-    }
-    return null;
-  });
-
-  if (freshEntries === null) {
-    // Leave the array as is, if there are no new values
-    return;
-  }
-
-  // remove the failure and show a short notice that loading is working again
-  if (failureMessage !== undefined) {
-    clear(failureMessage);
-    failureMessage = undefined;
-    show("info", "Entries loaded again");
-  }
-
-  // Just use, if not entries in List
-  if (entries.value.length === 0) {
-    entries.value = freshEntries;
-    return;
-  }
-
-  // Merge Entries
-  for (const freshEntry of freshEntries) {
-    const existingEntry = entries.value.find((e) => e.ID === freshEntry.ID);
-
-    // Add Entries which do not already exist
-    if (!existingEntry) {
-      entries.value.push(freshEntry);
-      continue;
-    }
-
-    // Override existing Entries only if there is currently no user interaction on the entry
-    if (!existingEntry._dirty) {
-      Object.assign(existingEntry, freshEntry);
-    }
-  }
-
-  // Remove Entries not in the freshEntries Array
-  const freshIds = new Set(freshEntries.map((e) => e.ID));
-  for (let i = entries.value.length - 1; i >= 0; i--) {
-    const localEntry = entries.value[i];
-    if (!freshIds.has(localEntry.ID)) {
-      entries.value.splice(i, 1);
-    }
-  }
-}
-
 async function createEntry() {
   if (searchInput.value === "") {
     return;
   }
   // Get entries from server
   try {
-    const entry = await apiCreateEntry(searchInput.value, listID);
-    entries.value.push(entry);
+    await apiCreateEntry(searchInput.value, listID);
   } catch (error) {
     show("error", "Unable to create new entry", { logMessage: error });
   }
@@ -197,18 +137,109 @@ async function updateEntry(entry: Entry) {
   }
 }
 
-async function changingEntry(value: boolean, entry: Entry) {
-  entry._dirty = value;
+// eventSourceTimeout is to prevent a connection without any traffic being keeps open. The server should send a ping every 5 seconds
+let eventSourceTimeout = <number | null>null;
+function createEventSourceTimeout() {
+  eventSourceTimeout = setTimeout(restart, 15_000);
+}
+function deleteEventSourceTimeout() {
+  if (eventSourceTimeout !== null) {
+    clearTimeout(eventSourceTimeout);
+  }
+}
+function resetEventSourceTimeout() {
+  deleteEventSourceTimeout();
+  createEventSourceTimeout();
+}
+
+// eventSource keeps the entries updated in the background, with an Sever-Sent Event.
+// If the connection fails, we do not rely on reconnection from SSE, but just create a new one ourself.
+let eventSource = <EventSource | null>null;
+function createEventSource() {
+  eventSource = new EventSource(`/api/v1/entries/events?ListID=${listID}`);
+
+  resetEventSourceTimeout();
+
+  // Do not use the SSE Reconnection, because it works different on all browser
+  eventSource.onerror = (event) => {
+    console.log(event);
+    restart();
+  };
+  eventSource.addEventListener("ping", () => {
+    resetEventSourceTimeout();
+  });
+  eventSource.addEventListener("create", (event: MessageEvent) => {
+    const entry = JSON.parse(event.data) as Entry;
+    entries.value.push(entry);
+  });
+  eventSource.addEventListener("update", async (event: MessageEvent) => {
+    const entry = JSON.parse(event.data) as Entry;
+    const index = entries.value.findIndex((item) => item.ID === entry.ID);
+    if (index === -1) {
+      return;
+    }
+    entries.value[index] = entry;
+  });
+  eventSource.addEventListener("delete", async (event: MessageEvent) => {
+    const entry = JSON.parse(event.data) as Entry;
+    const index = entries.value.findIndex((item) => item.ID === entry.ID);
+    if (index === -1) {
+      return;
+    }
+    entries.value.splice(index, 1);
+  });
+  return eventSource;
+}
+function deleteEventSource() {
+  deleteEventSourceTimeout();
+  if (eventSource !== null) {
+    eventSource.close();
+    eventSource = null;
+  }
+}
+
+async function start() {
+  // Clear Event Source
+  deleteEventSource();
+
+  // Get all entries initially
+  try {
+    const newEntries = await apiGetEntries(listID);
+    entries.value = newEntries;
+  } catch (error) {
+    // if it's the first failure, show a message and do not remove it automatically
+    if (failureMessage === undefined) {
+      failureMessage = show("error", "Unable to load entries", {
+        logMessage: error,
+        autoHide: false,
+      }).id;
+    }
+
+    restart();
+    return;
+  }
+
+  // remove the failure and show a short notice that loading is working again
+  if (failureMessage !== undefined) {
+    clear(failureMessage);
+    failureMessage = undefined;
+    show("info", "Entries loaded again");
+  }
+
+  // Create Event Source to get updates
+  createEventSource();
+}
+
+function restart() {
+  setTimeout(start, 1000);
 }
 
 onMounted(() => {
   getTypes();
-  getEntries();
-  const interval = setInterval(getEntries, 5000);
-
-  onUnmounted(() => {
-    clearInterval(interval);
-  });
+  start();
+});
+onUnmounted(() => {
+  deleteEventSource();
 });
 </script>
 
@@ -234,7 +265,6 @@ onMounted(() => {
           :types="types"
           @contextmenu="contextmenuShow($event, entry)"
           @update="updateEntry(entry)"
-          @changing="changingEntry($event, entry)"
         >
         </EntryItem>
       </ul>
@@ -247,7 +277,6 @@ onMounted(() => {
           :types="types"
           @contextmenu="contextmenuShow($event, entry)"
           @update="updateEntry(entry)"
-          @changing="changingEntry($event, entry)"
         >
         </EntryItem>
       </ul>
