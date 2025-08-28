@@ -1,4 +1,9 @@
+<script setup lang="ts">
+import NotificationBanner from "@/Components/NotificationBanner.vue";
+</script>
+
 <template>
+  <NotificationBanner />
   <header>
     <slot name="header"></slot>
   </header>
@@ -18,6 +23,8 @@
   --color-accent: #10b981;
   --color-accent-light: #34d399;
   --color-accent-dark: #059669;
+
+  --color-error: #dc2626;
 
   /* Neutral / Base */
   --color-background: #f9fafb;

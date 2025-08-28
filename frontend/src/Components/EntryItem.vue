@@ -2,6 +2,9 @@
 import { type Entry, type Type } from "@/types.ts";
 import { apiUpdateEntry } from "@/api/api";
 import Button from "@/Components/Button.vue";
+import { useNotificationManager } from '@/composables/useNotificationManager'
+
+const { showError } = useNotificationManager()
 
 const props = defineProps<{
   entry: Entry;
@@ -13,9 +16,9 @@ async function becomesDirty() {
 }
 
 async function update() {
-  await apiUpdateEntry(props.entry).catch((error) =>
-    alert("unable to update entry" + error),
-  );
+  await apiUpdateEntry(props.entry).catch((error) => {
+    showError("Unable to update entry", error);
+  });
   props.entry._dirty = false;
 }
 

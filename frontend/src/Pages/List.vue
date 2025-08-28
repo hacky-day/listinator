@@ -14,6 +14,9 @@ import Button from "@/Components/Button.vue";
 import EntryItem from "@/Components/EntryItem.vue";
 import ShareButton from "@/Components/ShareButton.vue";
 import Contextmenu from "@/Components/Contextmenu.vue";
+import { useNotificationManager } from "@/composables/useNotificationManager";
+
+const { showError } = useNotificationManager();
 
 const route = useRoute();
 const listID = route.params.id as string;
@@ -74,7 +77,7 @@ function contextmenuHandle(action: string) {
         (entry) => targetEntry.ID !== entry?.ID,
       );
     } catch (error) {
-      alert("unable to delete entry" + error);
+      showError("Unable to delete entry", error);
       return;
     }
   }
@@ -105,14 +108,14 @@ async function getTypes() {
   try {
     types.value = await apiGetTypes();
   } catch (error) {
-    alert("unable to get types:" + error);
+    showError("Unable to load entry types", error);
   }
 }
 
 async function getEntries() {
   // Get entries from server
   const freshEntries = await apiGetEntries(listID).catch((error) => {
-    alert("unable to get entries:" + error);
+    showError("Unable to load entries", error);
     return [] as Entry[];
   });
 
@@ -153,7 +156,7 @@ async function createEntry() {
     const entry = await apiCreateEntry(searchInput.value, listID);
     entries.value.push(entry);
   } catch (error) {
-    alert("unable to get entries:" + error);
+    showError("Unable to create new entry", error);
   }
 
   // Reset input

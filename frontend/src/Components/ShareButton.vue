@@ -1,4 +1,8 @@
 <script setup lang="ts">
+import { useNotificationManager } from '@/composables/useNotificationManager'
+
+const { showError, showSuccess } = useNotificationManager()
+
 /**
  * share shares the current URL. Either via share or via copy to clipboard.
  * Support for different Browser and mobile are hard to test.
@@ -12,9 +16,9 @@ async function share() {
       return;
     }
     await navigator.clipboard.writeText(window.location.href);
-    alert("Share is not supported. URL was copied to the Clipboard instead.");
+    showSuccess("URL copied to clipboard successfully");
   } catch (error) {
-    alert("unable to share link: " + error);
+    showError("Unable to share link", error);
   }
 }
 </script>
