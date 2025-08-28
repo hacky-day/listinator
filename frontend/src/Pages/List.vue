@@ -161,6 +161,14 @@ onMounted(() => {
     }
     entries.value[index] = entry;
   });
+  evtSource.addEventListener("delete", async (event: MessageEvent) => {
+    const entry = JSON.parse(event.data) as Entry;
+    const index = entries.value.findIndex((item) => item.ID === entry.ID);
+    if (index === -1) {
+      return;
+    }
+    delete entries.value[index];
+  });
   onUnmounted(() => {
     evtSource.close();
   });
