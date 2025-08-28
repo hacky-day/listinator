@@ -6,6 +6,9 @@ import { router } from "@/router.ts";
 import DefaultLayout from "@/Layouts/DefaultLayout.vue"
 import Button from "@/Components/Button.vue"
 import { apiCreateSession } from "@/api/api";
+import { useNotificationManager } from '@/composables/useNotificationManager'
+
+const { showError } = useNotificationManager()
 
 const username = ref<string>("");
 const password = ref<string>("");
@@ -16,7 +19,7 @@ async function login(event: Event) {
       await apiCreateSession(username.value, password.value)
       router.push({name: "home"})
     } catch (error) {
-      alert("login failed:" + error);
+      showError("Login failed. Please check your credentials and try again.", error);
     }
   }
 

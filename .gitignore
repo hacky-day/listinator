@@ -1,6 +1,7 @@
 # Go
 /listinator.db
 /listinator
+data/listinator.db
 
 # Vue
 node_modules
