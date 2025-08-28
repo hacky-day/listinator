@@ -7,6 +7,7 @@ import {
   apiCreateEntry,
   apiGetTypes,
   apiDeleteEntry,
+  apiUpdateEntry,
 } from "@/api/api.ts";
 import { type Entry, type Type, type ContextmenuAction } from "@/types.ts";
 import DefaultLayout from "@/Layouts/DefaultLayout.vue";
@@ -36,7 +37,6 @@ function contextmenuShow(event: MouseEvent, entry: Entry) {
   }
   contextmenuVisible.value = true;
   contextmenuTarget.value = entry;
-  entry._dirty = true;
   contextmenuX.value = event.clientX;
   contextmenuY.value = event.clientY;
   document.addEventListener("click", contextmenuHandleOutsideClick);
@@ -55,7 +55,6 @@ function contextmenuHandleOutsideClick(event: Event) {
 function contextmenuClose() {
   contextmenuVisible.value = false;
   if (contextmenuTarget.value !== undefined) {
-    contextmenuTarget.value._dirty = false;
     contextmenuTarget.value = undefined;
   }
   contextmenuX.value = 0;
@@ -111,37 +110,11 @@ async function getTypes() {
 
 async function getEntries() {
   // Get entries from server
-  const freshEntries = await apiGetEntries(listID).catch((error) => {
-    alert("unable to get entries:" + error);
-    return [] as Entry[];
-  });
-
-  // Just use, if not entries in List
-  if (entries.value.length === 0) {
-    entries.value = freshEntries;
-    return;
+  try {
+    entries.value = await apiGetEntries(listID);
+  } catch (error) {
+    alert("unable to get entries: " + error);
   }
-
-  // Merge Entries
-  for (const freshEntry of freshEntries) {
-    const existingEntry = entries.value.find((e) => e.ID === freshEntry.ID);
-
-    // Add Entries which do not already exist
-    if (!existingEntry) {
-      entries.value.push(freshEntry);
-      continue;
-    }
-
-    // Override existing Entries only if there is currently no user interaction on the entry
-    if (!existingEntry._dirty) {
-      Object.assign(existingEntry, freshEntry);
-    }
-  }
-
-  // Remove Entries not in the freshEnties Array
-  entries.value = entries.value.filter((localEntry) =>
-    freshEntries.some((freshEntry) => freshEntry.ID === localEntry.ID),
-  );
 }
 
 async function createEntry() {
@@ -150,8 +123,7 @@ async function createEntry() {
   }
   // Get entries from server
   try {
-    const entry = await apiCreateEntry(searchInput.value, listID);
-    entries.value.push(entry);
+    await apiCreateEntry(searchInput.value, listID);
   } catch (error) {
     alert("unable to get entries:" + error);
   }
@@ -160,13 +132,45 @@ async function createEntry() {
   searchInput.value = "";
 }
 
+async function updateEntry(entry: Entry) {
+  try {
+    await apiUpdateEntry(entry);
+  } catch (error) {
+    alert("unable to update entry: " + error);
+    return;
+  }
+}
+
 onMounted(() => {
   getTypes();
   getEntries();
-  const interval = setInterval(getEntries, 5000);
 
+  const evtSource = new EventSource(`/api/v1/entries/events?ListID=${listID}`);
+  evtSource.onerror = (event) => {
+    console.log(event);
+  };
+  evtSource.addEventListener("create", (event: MessageEvent) => {
+    const entry = JSON.parse(event.data) as Entry;
+    entries.value.push(entry);
+  });
+  evtSource.addEventListener("update", async (event: MessageEvent) => {
+    const entry = JSON.parse(event.data) as Entry;
+    const index = entries.value.findIndex((item) => item.ID === entry.ID);
+    if (index === -1) {
+      return;
+    }
+    entries.value[index] = entry;
+  });
+  evtSource.addEventListener("delete", async (event: MessageEvent) => {
+    const entry = JSON.parse(event.data) as Entry;
+    const index = entries.value.findIndex((item) => item.ID === entry.ID);
+    if (index === -1) {
+      return;
+    }
+    entries.value.splice(index, 1);
+  });
   onUnmounted(() => {
-    clearInterval(interval);
+    evtSource.close();
   });
 });
 </script>
@@ -187,22 +191,24 @@ onMounted(() => {
     <template v-slot:main>
       <ul>
         <EntryItem
-          v-for="entry in activeSortedNotBoughtEntries"
+          v-for="(entry, i) in activeSortedNotBoughtEntries"
           :key="entry.ID"
-          :entry="entry"
+          v-model="activeSortedNotBoughtEntries[i]"
           :types="types"
           @contextmenu="contextmenuShow($event, entry)"
+          @update="updateEntry(entry)"
         >
         </EntryItem>
       </ul>
       <hr v-if="activeBoughtEntries.length > 0" />
       <ul>
         <EntryItem
-          v-for="entry in activeBoughtEntries"
+          v-for="(entry, i) in activeBoughtEntries"
           :key="entry.ID"
-          :entry="entry"
+          v-model="activeBoughtEntries[i]"
           :types="types"
           @contextmenu="contextmenuShow($event, entry)"
+          @update="updateEntry(entry)"
         >
         </EntryItem>
       </ul>

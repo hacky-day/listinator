@@ -38,7 +38,7 @@ func main() {
 
 	// API V1
 	apiV1 := e.Group("/api/v1")
-	sV1 := server.New(db)
+	sV1 := server.New(db, e.Logger)
 	sV1.SetupRoutes(apiV1)
 
 	// Embeded Frontend
