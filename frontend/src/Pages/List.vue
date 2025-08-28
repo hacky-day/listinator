@@ -167,7 +167,7 @@ onMounted(() => {
     if (index === -1) {
       return;
     }
-    delete entries.value[index];
+    entries.value.splice(index, 1);
   });
   onUnmounted(() => {
     evtSource.close();
