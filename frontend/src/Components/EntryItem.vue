@@ -1,37 +1,34 @@
 <script setup lang="ts">
 import { type Entry, type Type } from "@/types.ts";
-import { apiUpdateEntry } from "@/api/api";
+
 import Button from "@/Components/Button.vue";
-import { useNotificationManager } from '@/composables/useNotificationManager'
 
-const { showError } = useNotificationManager()
-
-const props = defineProps<{
-  entry: Entry;
+defineProps<{
   types: Type[];
 }>();
 
-async function becomesDirty() {
-  props.entry._dirty = true;
-}
+const emit = defineEmits<{
+  (e: "update"): void;
+  (e: "changing", value: boolean): void;
+}>();
 
-async function update() {
-  await apiUpdateEntry(props.entry).catch((error) => {
-    showError("Unable to update entry", error);
-  });
-  props.entry._dirty = false;
-}
+const entry = defineModel<Entry>({ required: true });
 
-async function onClickButton() {
-  props.entry.Bought = !props.entry.Bought;
-  update();
+function onClick() {
+  entry.value.Bought = !entry.value.Bought;
+  emit("update");
 }
 </script>
 
 <template>
   <li>
     <div class="entryAttributes">
-      <select @focus="becomesDirty" @change="update" v-model="entry.TypeID">
+      <select
+        v-model="entry.TypeID"
+        @change="$emit('update')"
+        @focus="$emit('changing', true)"
+        @blur="$emit('changing', false)"
+      >
         <option v-for="type in types" :key="type.Name" :value="type.Name">
           {{ type.Icon }}
         </option>
@@ -40,12 +37,15 @@ async function onClickButton() {
     </div>
     <div class="entryAttributes">
       <input
-        @focus="becomesDirty"
-        @blur="update"
         v-model="entry.Number"
         type="text"
+        @focus="$emit('changing', true)"
+        @blur="
+          $emit('update');
+          $emit('changing', false);
+        "
       />
-      <Button @click="onClickButton">{{ entry.Bought ? "+" : "✓" }}</Button>
+      <Button @click="onClick">{{ entry.Bought ? "+" : "✓" }}</Button>
     </div>
   </li>
 </template>
