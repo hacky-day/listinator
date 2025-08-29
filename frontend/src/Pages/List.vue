@@ -7,6 +7,7 @@ import {
   apiCreateEntry,
   apiGetTypes,
   apiDeleteEntry,
+  apiUpdateEntry,
 } from "@/api/api.ts";
 import { type Entry, type Type, type ContextmenuAction } from "@/types.ts";
 import DefaultLayout from "@/Layouts/DefaultLayout.vue";
@@ -163,6 +164,21 @@ async function createEntry() {
   searchInput.value = "";
 }
 
+async function updateEntry(entry: Entry) {
+  try {
+    await apiUpdateEntry(entry);
+  } catch (error) {
+    alert("unable to update entry: " + error);
+    return;
+  }
+}
+
+async function changingEntry(value: boolean, entry: Entry) {
+  console.log(value);
+  entry._dirty = true;
+  console.log(entry);
+}
+
 onMounted(() => {
   getTypes();
   getEntries();
@@ -190,22 +206,26 @@ onMounted(() => {
     <template v-slot:main>
       <ul>
         <EntryItem
-          v-for="entry in activeSortedNotBoughtEntries"
+          v-for="(entry, i) in activeSortedNotBoughtEntries"
           :key="entry.ID"
-          :entry="entry"
+          v-model="activeSortedNotBoughtEntries[i]"
           :types="types"
           @contextmenu="contextmenuShow($event, entry)"
+          @update="updateEntry(entry)"
+          @changing="changingEntry($event, entry)"
         >
         </EntryItem>
       </ul>
       <hr v-if="activeBoughtEntries.length > 0" />
       <ul>
         <EntryItem
-          v-for="entry in activeBoughtEntries"
+          v-for="(entry, i) in activeBoughtEntries"
           :key="entry.ID"
-          :entry="entry"
+          v-model="activeBoughtEntries[i]"
           :types="types"
           @contextmenu="contextmenuShow($event, entry)"
+          @update="updateEntry(entry)"
+          @changing="changingEntry($event, entry)"
         >
         </EntryItem>
       </ul>
