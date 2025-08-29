@@ -142,9 +142,13 @@ async function getEntries() {
   }
 
   // Remove Entries not in the freshEnties Array
-  entries.value = entries.value.filter((localEntry) =>
-    freshEntries.some((freshEntry) => freshEntry.ID === localEntry.ID),
-  );
+  const freshIds = new Set(freshEntries.map((e) => e.ID));
+  for (let i = entries.value.length - 1; i >= 0; i--) {
+    const localEntry = entries.value[i];
+    if (!freshIds.has(localEntry.ID)) {
+      entries.value.splice(i, 1);
+    }
+  }
 }
 
 async function createEntry() {
