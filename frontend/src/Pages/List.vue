@@ -40,8 +40,8 @@ function contextmenuShow(event: MouseEvent, entry: Entry) {
   contextmenuVisible.value = true;
   contextmenuTarget.value = entry;
   entry._dirty = true;
-  contextmenuX.value = event.clientX;
-  contextmenuY.value = event.clientY;
+  contextmenuX.value = event.pageX;
+  contextmenuY.value = event.pageY;
   document.addEventListener("click", contextmenuHandleOutsideClick);
 }
 
