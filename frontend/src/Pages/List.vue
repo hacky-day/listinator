@@ -116,8 +116,13 @@ async function getEntries() {
   // Get entries from server
   const freshEntries = await apiGetEntries(listID).catch((error) => {
     showError("Unable to load entries", error);
-    return [] as Entry[];
+    return null;
   });
+
+  // Leave the array as is, if there are no new values
+  if (freshEntries === null) {
+    return;
+  }
 
   // Just use, if not entries in List
   if (entries.value.length === 0) {
@@ -141,7 +146,7 @@ async function getEntries() {
     }
   }
 
-  // Remove Entries not in the freshEnties Array
+  // Remove Entries not in the freshEntries Array
   const freshIds = new Set(freshEntries.map((e) => e.ID));
   for (let i = entries.value.length - 1; i >= 0; i--) {
     const localEntry = entries.value[i];
