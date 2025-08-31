@@ -250,6 +250,16 @@ function restart() {
   setTimeout(start, 1000);
 }
 
+// beforeLeave fixes the width of the element before the transition leave is
+// applied. This way, when setting the position to absolute the element is not
+// shrinked due to the flexbox.
+// See https://github.com/vuejs/vue/issues/9713#issuecomment-572153283
+function beforeLeave(el: Element) {
+  const { width } = window.getComputedStyle(el);
+  // This is a silly cast, but the vue hook absolutly wants a Element although it is actually a HTMLElement
+  (el as HTMLElement).style.width = width;
+}
+
 onMounted(() => {
   getTypes();
   start();
@@ -273,7 +283,7 @@ onUnmounted(() => {
       <Button @click="ensureEntryOnNotBoughtList" class="inverted">+</Button>
     </template>
     <template v-slot:main>
-      <ul>
+      <TransitionGroup name="list" tag="ul" @before-leave="beforeLeave">
         <EntryItem
           v-for="(entry, i) in activeSortedNotBoughtEntries"
           :key="entry.ID"
@@ -283,9 +293,7 @@ onUnmounted(() => {
           @update="updateEntry(entry)"
         >
         </EntryItem>
-      </ul>
-      <hr v-if="activeBoughtEntries.length > 0" />
-      <ul>
+        <hr v-if="activeBoughtEntries.length > 0" />
         <EntryItem
           v-for="(entry, i) in activeBoughtEntries"
           :key="entry.ID"
@@ -295,7 +303,7 @@ onUnmounted(() => {
           @update="updateEntry(entry)"
         >
         </EntryItem>
-      </ul>
+      </TransitionGroup>
       <Contextmenu
         v-if="contextmenuVisible"
         id="contextmenu"
@@ -312,6 +320,23 @@ onUnmounted(() => {
 hr {
   color: var(--color-primary);
   margin: 0.5em 1em;
+}
+
+.list-move, /* apply transition to moving elements */
+.list-enter-active,
+.list-leave-active {
+  transition: all 0.5s ease;
+}
+
+.list-enter-from,
+.list-leave-to {
+  opacity: 0;
+}
+
+/* ensure leaving items are taken out of layout flow so that moving
+   animations can be calculated correctly. */
+.list-leave-active {
+  position: absolute;
 }
 
 header input {
