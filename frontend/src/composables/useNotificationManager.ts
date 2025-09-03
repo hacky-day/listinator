@@ -1,109 +1,68 @@
 import { ref } from "vue";
 
+type Level = "info" | "warning" | "error";
+interface Options {
+  logMessage?: unknown;
+  autoHide: boolean;
+  autoHideDelay: number;
+}
+const defaultOptions: Options = { autoHide: true, autoHideDelay: 3000 };
+
 export interface NotificationMessage {
   id: string;
+  level: Level;
   userMessage: string;
-  type: "error" | "success";
-  technicalDetails?: string;
-  timestamp: Date;
-  autoHide?: boolean;
-  autoHideDelay?: number;
 }
 
 // Global reactive state for notification management
-const currentNotification = ref<NotificationMessage | null>(null);
-const notificationHistory = ref<NotificationMessage[]>([]);
+const notifications = ref<NotificationMessage[]>([]);
 
 export function useNotificationManager() {
-  /**
-   * Show an error to the user with a user-friendly message
-   * Technical details are logged to console for debugging
-   * Errors never auto-hide and must be manually dismissed
-   */
-  function showError(userMessage: string, technicalDetails?: unknown) {
-    // Log technical details to console for developers
-    if (technicalDetails) {
-      console.error("Error occurred:", {
-        userMessage,
-        technicalDetails:
-          technicalDetails instanceof Error
-            ? technicalDetails.message
-            : String(technicalDetails),
-        stack:
-          technicalDetails instanceof Error
-            ? technicalDetails.stack
-            : undefined,
-        timestamp: new Date(),
-      });
-    } else {
-      console.error("Error occurred:", userMessage);
+  function show(
+    level: Level,
+    userMessage: string,
+    options: Partial<Options> = {},
+  ): NotificationMessage {
+    const finalOptions: Options = { ...defaultOptions, ...options };
+
+    // Log message
+    if (finalOptions.logMessage !== undefined) {
+      console.log(finalOptions.logMessage);
     }
 
-    // Create error message for user display
-    const errorMessage: NotificationMessage = {
+    const notification = <NotificationMessage>{
       id: Date.now().toString(),
-      userMessage,
-      type: "error",
-      technicalDetails:
-        technicalDetails instanceof Error
-          ? technicalDetails.message
-          : String(technicalDetails),
-      timestamp: new Date(),
-      autoHide: false, // Errors never auto-hide
+      level: level,
+      userMessage: userMessage,
     };
 
-    // Update global state
-    currentNotification.value = errorMessage;
-    notificationHistory.value.push(errorMessage);
-  }
+    notifications.value.push(notification);
 
-  /**
-   * Clear the current notification message
-   */
-  function clearError() {
-    currentNotification.value = null;
-  }
-
-  /**
-   * Show a success message
-   * Success messages auto-hide by default after a configurable delay
-   */
-  function showSuccess(
-    message: string,
-    options: { autoHide?: boolean; autoHideDelay?: number } = {},
-  ) {
-    console.log("Success:", message);
-
-    const { autoHide = true, autoHideDelay = 3000 } = options;
-
-    const successMessage: NotificationMessage = {
-      id: Date.now().toString(),
-      userMessage: message,
-      type: "success",
-      timestamp: new Date(),
-      autoHide,
-      autoHideDelay,
-    };
-
-    // Update global state
-    currentNotification.value = successMessage;
-    notificationHistory.value.push(successMessage);
-
-    // Auto-hide if configured
-    if (autoHide) {
-      setTimeout(() => {
-        // Only clear if this is still the current notification
-        if (currentNotification.value?.id === successMessage.id) {
-          clearError();
-        }
-      }, autoHideDelay);
+    if (finalOptions.autoHide) {
+      setTimeout(() => clear(notification.id), finalOptions.autoHideDelay);
     }
+    return notification;
+  }
+
+  function clear(id?: string) {
+    if (id === undefined) {
+      notifications.value = [];
+      return;
+    }
+    const index = notifications.value.findIndex(
+      (n: NotificationMessage) => n.id === id,
+    );
+
+    // index not found
+    if (index === -1) {
+      return;
+    }
+    notifications.value.splice(index, 1);
   }
 
   return {
-    currentNotification,
-    showError,
-    clearError,
-    showSuccess,
+    notifications,
+    show,
+    clear,
   };
 }

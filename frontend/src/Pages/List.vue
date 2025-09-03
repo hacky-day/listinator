@@ -17,7 +17,9 @@ import ShareButton from "@/Components/ShareButton.vue";
 import Contextmenu from "@/Components/Contextmenu.vue";
 import { useNotificationManager } from "@/composables/useNotificationManager";
 
-const { showError } = useNotificationManager();
+const { show, clear } = useNotificationManager();
+
+let failureMessage: string | undefined = undefined;
 
 const route = useRoute();
 const listID = route.params.id as string;
@@ -78,7 +80,7 @@ function contextmenuHandle(action: string) {
         (entry) => targetEntry.ID !== entry?.ID,
       );
     } catch (error) {
-      showError("Unable to delete entry", error);
+      show("error", "Unable to delete entry", { logMessage: error });
       return;
     }
   }
@@ -109,20 +111,33 @@ async function getTypes() {
   try {
     types.value = await apiGetTypes();
   } catch (error) {
-    showError("Unable to load entry types", error);
+    show("error", "Unable to load entry types", { logMessage: error });
   }
 }
 
 async function getEntries() {
   // Get entries from server
   const freshEntries = await apiGetEntries(listID).catch((error) => {
-    showError("Unable to load entries", error);
+    // if it's the first failure, show a message and do not remove it automatically
+    if (failureMessage === undefined) {
+      failureMessage = show("error", "Unable to load entries", {
+        logMessage: error,
+        autoHide: false,
+      }).id;
+    }
     return null;
   });
 
-  // Leave the array as is, if there are no new values
   if (freshEntries === null) {
+    // Leave the array as is, if there are no new values
     return;
+  }
+
+  // remove the failure and show a short notice that loading is working again
+  if (failureMessage !== undefined) {
+    clear(failureMessage);
+    failureMessage = undefined;
+    show("info", "Entries loaded again");
   }
 
   // Just use, if not entries in List
@@ -166,7 +181,7 @@ async function createEntry() {
     const entry = await apiCreateEntry(searchInput.value, listID);
     entries.value.push(entry);
   } catch (error) {
-    showError("Unable to create new entry", error);
+    show("error", "Unable to create new entry", { logMessage: error });
   }
 
   // Reset input
@@ -177,7 +192,7 @@ async function updateEntry(entry: Entry) {
   try {
     await apiUpdateEntry(entry);
   } catch (error) {
-    showError("Unable to update entry", error);
+    show("error", "Unable to update entry", { logMessage: error });
     return;
   }
 }

@@ -7,9 +7,9 @@ import { apiCreateList, apiDeleteSession, apiGetSession } from "@/api/api.ts";
 import { router } from "@/router.ts";
 import { type List } from "@/types.ts";
 import { onMounted, ref } from "vue";
-import { useNotificationManager } from '@/composables/useNotificationManager'
+import { useNotificationManager } from "@/composables/useNotificationManager";
 
-const { showError } = useNotificationManager()
+const { show } = useNotificationManager();
 
 const loggedIn = ref<boolean>(false);
 const loaded = ref<boolean>(false);
@@ -23,7 +23,7 @@ async function listAsGuest() {
       params: { id: list.ID },
     });
   } catch (error) {
-    showError("Unable to create a new list", error);
+    show("error", "Unable to create a new list", { logMessage: error });
   }
 }
 

@@ -3,26 +3,29 @@ import { ref } from "vue";
 
 import { router } from "@/router.ts";
 
-import DefaultLayout from "@/Layouts/DefaultLayout.vue"
-import Button from "@/Components/Button.vue"
+import DefaultLayout from "@/Layouts/DefaultLayout.vue";
+import Button from "@/Components/Button.vue";
 import { apiCreateSession } from "@/api/api";
-import { useNotificationManager } from '@/composables/useNotificationManager'
+import { useNotificationManager } from "@/composables/useNotificationManager";
 
-const { showError } = useNotificationManager()
+const { show } = useNotificationManager();
 
 const username = ref<string>("");
 const password = ref<string>("");
 
 async function login(event: Event) {
-    event.preventDefault();
-    try {
-      await apiCreateSession(username.value, password.value)
-      router.push({name: "home"})
-    } catch (error) {
-      showError("Login failed. Please check your credentials and try again.", error);
-    }
+  event.preventDefault();
+  try {
+    await apiCreateSession(username.value, password.value);
+    router.push({ name: "home" });
+  } catch (error) {
+    show(
+      "error",
+      "Login failed. Please check your credentials and try again.",
+      { logMessage: error },
+    );
   }
-
+}
 </script>
 
 <template>
@@ -32,8 +35,18 @@ async function login(event: Event) {
     </template>
     <template v-slot:main>
       <form id="loginForm">
-        <input type="text" id="nameInput" placeholder="Name" v-model="username"></input>
-        <input type="password" id="passwordInput" placeholder="Password" v-model="password"></input>
+        <input
+          type="text"
+          id="nameInput"
+          placeholder="Name"
+          v-model="username"
+        />
+        <input
+          type="password"
+          id="passwordInput"
+          placeholder="Password"
+          v-model="password"
+        />
         <Button @click="login" type="submit">Login</Button>
       </form>
     </template>
