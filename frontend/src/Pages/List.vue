@@ -84,13 +84,15 @@ function contextmenuHandle(action: string) {
   }
 }
 
+const activeEntries = computed(() => {
+  return entries.value.filter((entry: Entry) =>
+    entry.Name.toLowerCase().includes(searchInput.value.toLowerCase()),
+  );
+});
+
 const activeSortedNotBoughtEntries = computed(() => {
-  return entries.value
-    .filter(
-      (entry) =>
-        !entry.Bought &&
-        entry.Name.toLowerCase().includes(searchInput.value.toLowerCase()),
-    )
+  return activeEntries.value
+    .filter((entry) => !entry.Bought)
     .sort((a, b) => {
       // Sort by type
       const typeCompare = a.TypeID.localeCompare(b.TypeID);
@@ -102,7 +104,7 @@ const activeSortedNotBoughtEntries = computed(() => {
 });
 
 const activeBoughtEntries = computed(() => {
-  return entries.value.filter((entry) => entry.Bought);
+  return activeEntries.value.filter((entry) => entry.Bought);
 });
 
 async function getTypes() {
@@ -113,19 +115,33 @@ async function getTypes() {
   }
 }
 
-async function createEntry() {
+async function ensureEntryOnNotBoughtList() {
   if (searchInput.value === "") {
     return;
   }
-  // Get entries from server
-  try {
-    await apiCreateEntry(searchInput.value, listID);
-  } catch (error) {
-    show("error", "Unable to create new entry", { logMessage: error });
-  }
 
-  // Reset input
-  searchInput.value = "";
+  try {
+    // If only one entry matches the filter, reactivate it if bought, otherwise do nothing.
+    if (activeEntries.value.length === 1) {
+      const entry = activeEntries.value[0];
+      if (entry.Bought === false) {
+        return;
+      }
+      entry.Bought = false;
+      await updateEntry(entry);
+      return;
+    }
+
+    // Create new Entry
+    try {
+      await apiCreateEntry(searchInput.value, listID);
+    } catch (error) {
+      show("error", "Unable to create new entry", { logMessage: error });
+    }
+  } finally {
+    // Reset input
+    searchInput.value = "";
+  }
 }
 
 async function updateEntry(entry: Entry) {
@@ -249,12 +265,12 @@ onUnmounted(() => {
       <ShareButton></ShareButton>
       <input
         v-model="searchInput"
-        @keydown.enter="createEntry"
+        @keydown.enter="ensureEntryOnNotBoughtList"
         type="search"
         autocomplete="off"
         placeholder="Search"
       />
-      <Button @click="createEntry" class="inverted">+</Button>
+      <Button @click="ensureEntryOnNotBoughtList" class="inverted">+</Button>
     </template>
     <template v-slot:main>
       <ul>
