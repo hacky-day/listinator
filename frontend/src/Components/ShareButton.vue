@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { useNotificationManager } from '@/composables/useNotificationManager'
+import { useNotificationManager } from "@/composables/useNotificationManager";
 
-const { showError, showSuccess } = useNotificationManager()
+const { show } = useNotificationManager();
 
 /**
  * share shares the current URL. Either via share or via copy to clipboard.
@@ -16,19 +16,26 @@ async function share() {
       return;
     }
     await navigator.clipboard.writeText(window.location.href);
-    showSuccess("URL copied to clipboard successfully");
+    show("info", "URL copied to clipboard successfully");
   } catch (error) {
-    showError("Unable to share link", error);
+    show("error", "Unable to share link", { logMessage: error });
   }
 }
 </script>
 
 <template>
   <button @click="share">
-    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="white" viewBox="0 0 640 640">
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="20"
+      height="20"
+      fill="white"
+      viewBox="0 0 640 640"
+    >
       <!--!Font Awesome Free v7.0.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.-->
       <path
-        d="M448 256C501 256 544 213 544 160C544 107 501 64 448 64C395 64 352 107 352 160C352 165.4 352.5 170.8 353.3 176L223.6 248.1C206.7 233.1 184.4 224 160 224C107 224 64 267 64 320C64 373 107 416 160 416C184.4 416 206.6 406.9 223.6 391.9L353.3 464C352.4 469.2 352 474.5 352 480C352 533 395 576 448 576C501 576 544 533 544 480C544 427 501 384 448 384C423.6 384 401.4 393.1 384.4 408.1L254.7 336C255.6 330.8 256 325.5 256 320C256 314.5 255.5 309.2 254.7 304L384.4 231.9C401.3 246.9 423.6 256 448 256z" />
+        d="M448 256C501 256 544 213 544 160C544 107 501 64 448 64C395 64 352 107 352 160C352 165.4 352.5 170.8 353.3 176L223.6 248.1C206.7 233.1 184.4 224 160 224C107 224 64 267 64 320C64 373 107 416 160 416C184.4 416 206.6 406.9 223.6 391.9L353.3 464C352.4 469.2 352 474.5 352 480C352 533 395 576 448 576C501 576 544 533 544 480C544 427 501 384 448 384C423.6 384 401.4 393.1 384.4 408.1L254.7 336C255.6 330.8 256 325.5 256 320C256 314.5 255.5 309.2 254.7 304L384.4 231.9C401.3 246.9 423.6 256 448 256z"
+      />
     </svg>
   </button>
 </template>
