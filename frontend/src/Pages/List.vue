@@ -13,7 +13,7 @@ import { type Entry, type Type, type ContextmenuAction } from "@/types.ts";
 import DefaultLayout from "@/Layouts/DefaultLayout.vue";
 import Button from "@/Components/Button.vue";
 import EntryItem from "@/Components/EntryItem.vue";
-import ShareButton from "@/Components/ShareButton.vue";
+import BurgerMenu from "@/Components/BurgerMenu.vue";
 import Contextmenu from "@/Components/Contextmenu.vue";
 import { useNotificationManager } from "@/composables/useNotificationManager";
 
@@ -262,7 +262,7 @@ onUnmounted(() => {
 <template>
   <DefaultLayout>
     <template v-slot:header>
-      <ShareButton></ShareButton>
+      <BurgerMenu></BurgerMenu>
       <input
         v-model="searchInput"
         @keydown.enter="ensureEntryOnNotBoughtList"
