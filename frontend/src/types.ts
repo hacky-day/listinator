@@ -5,6 +5,7 @@ export interface List {
 export interface Type {
   Name: string;
   Icon: string;
+  Color: string;
 }
 
 export interface Entry {

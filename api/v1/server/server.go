@@ -25,6 +25,7 @@ func (s server) SetupRoutes(g *echo.Group) {
 	// entries
 	g.GET("/entries", s.entryList())
 	g.POST("/entries", s.entryCreate())
+	g.GET("/entries/:id", s.entryGet())
 	g.PUT("/entries/:id", s.entryUpdate())
 	g.DELETE("/entries/:id", s.entryDelete())
 	g.GET("/entries/events", s.entryGetEvents())

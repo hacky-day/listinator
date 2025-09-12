@@ -68,6 +68,24 @@ func (s server) entryCreate() echo.HandlerFunc {
 	}
 }
 
+func (s server) entryGet() echo.HandlerFunc {
+	type input struct {
+		ID uuid.UUID `param:"ID"`
+	}
+	return func(c echo.Context) error {
+		var i input
+		if err := c.Bind(&i); err != nil {
+			return echo.ErrBadRequest.SetInternal(err)
+		}
+
+		var e database.Entry
+		if err := s.db.First(&e, i.ID).Error; err != nil {
+			return echo.NotFoundHandler(c)
+		}
+		return c.JSON(http.StatusOK, e)
+	}
+}
+
 func (s server) entryUpdate() echo.HandlerFunc {
 	type input struct {
 		ID     uuid.UUID `param:"ID"`

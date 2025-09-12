@@ -1,11 +1,7 @@
 <script setup lang="ts">
-import { type Entry, type Type } from "@/types.ts";
+import { type Entry } from "@/types.ts";
 
 import Button from "@/Components/Button.vue";
-
-defineProps<{
-  types: Type[];
-}>();
 
 const emit = defineEmits<{
   (e: "update"): void;
@@ -20,27 +16,20 @@ function onClick() {
 </script>
 
 <template>
-  <li>
-    <div class="entryAttributes">
-      <select v-model="entry.TypeID" @change="$emit('update')">
-        <option v-for="type in types" :key="type.Name" :value="type.Name">
-          {{ type.Icon }}
-        </option>
-      </select>
-      <div>{{ entry.Name }}</div>
+  <div class="entry">
+    <div class="name">
+      {{ entry.Name }}
     </div>
     <div class="entryAttributes">
       <input v-model="entry.Number" type="text" @blur="$emit('update')" />
       <Button @click="onClick">{{ entry.Bought ? "+" : "✓" }}</Button>
     </div>
-  </li>
+  </div>
 </template>
 
 <style scoped>
-li {
+.entry {
   padding: 0.1em 0em;
-  margin: 0.2em 0em;
-  border-radius: var(--border-radius);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -48,9 +37,13 @@ li {
 }
 
 @media (hover: hover) and (pointer: fine) {
-  li:hover {
+  .entry:hover {
     background: var(--color-surface-hover);
   }
+}
+
+.name {
+  padding-left: 0.5em;
 }
 
 .entryAttributes {
@@ -59,17 +52,9 @@ li {
   gap: 0.5em;
 }
 
-li input {
+input {
   width: 6em;
   border: 0.1em solid var(--color-accent);
   text-align: right;
-}
-
-select {
-  width: 3em;
-  height: 2.5em;
-  background: var(--color-surface);
-  border: 0.1em solid var(--color-border);
-  border-radius: var(--border-radius);
 }
 </style>

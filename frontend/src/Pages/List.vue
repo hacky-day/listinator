@@ -9,13 +9,15 @@ import {
   apiDeleteEntry,
   apiUpdateEntry,
 } from "@/api/api.ts";
+import { router } from "@/router.ts";
+import { useNotificationManager } from "@/composables/useNotificationManager";
 import { type Entry, type Type, type ContextmenuAction } from "@/types.ts";
+
 import DefaultLayout from "@/Layouts/DefaultLayout.vue";
 import Button from "@/Components/Button.vue";
 import EntryItem from "@/Components/EntryItem.vue";
 import ShareButton from "@/Components/ShareButton.vue";
 import Contextmenu from "@/Components/Contextmenu.vue";
-import { useNotificationManager } from "@/composables/useNotificationManager";
 
 const { show, clear } = useNotificationManager();
 
@@ -31,6 +33,7 @@ const contextmenuVisible = ref(false);
 const contextmenuX = ref(0);
 const contextmenuY = ref(0);
 const contextmenuActions = [
+  { label: "Select Type", action: "selectType" },
   { label: "Delete", action: "delete" },
 ] as ContextmenuAction[];
 const contextmenuTarget = ref<Entry>();
@@ -81,6 +84,8 @@ function contextmenuHandle(action: string) {
       show("error", "Unable to delete entry", { logMessage: error });
       return;
     }
+  } else if (action === "selectType") {
+    router.push({ name: "typeSelector", params: { id: targetEntry.ID } });
   }
 }
 
@@ -90,17 +95,17 @@ const activeEntries = computed(() => {
   );
 });
 
-const activeSortedNotBoughtEntries = computed(() => {
-  return activeEntries.value
-    .filter((entry) => !entry.Bought)
-    .sort((a, b) => {
-      // Sort by type
-      const typeCompare = a.TypeID.localeCompare(b.TypeID);
-      if (typeCompare !== 0) return typeCompare;
-
-      // Sort by name
-      return a.Name.localeCompare(b.Name);
-    });
+const activeSortedNotBoughtEntriesbyType = computed(() => {
+  const groups: Record<string, Entry[]> = {};
+  types.value.forEach((type: Type) => {
+    groups[type.Name] = activeEntries.value
+      .filter((entry: Entry) => !entry.Bought && entry.TypeID === type.Name)
+      .sort((a: Entry, b: Entry) => {
+        // Sort by name
+        return a.Name.localeCompare(b.Name);
+      });
+  });
+  return groups;
 });
 
 const activeBoughtEntries = computed(() => {
@@ -283,26 +288,44 @@ onUnmounted(() => {
       <Button @click="ensureEntryOnNotBoughtList" class="inverted">+</Button>
     </template>
     <template v-slot:main>
-      <TransitionGroup name="list" tag="ul" @before-leave="beforeLeave">
-        <EntryItem
-          v-for="(entry, i) in activeSortedNotBoughtEntries"
-          :key="entry.ID"
-          v-model="activeSortedNotBoughtEntries[i]"
-          :types="types"
-          @contextmenu="contextmenuShow($event, entry)"
-          @update="updateEntry(entry)"
+      <TransitionGroup name="list" @before-leave="beforeLeave" tag="ul">
+        <template v-for="type in types">
+          <div
+            :key="type.Name"
+            v-if="activeSortedNotBoughtEntriesbyType[type.Name].length > 0"
+            class="divider"
+          >
+            {{ type.Icon }} {{ type.Name }}
+          </div>
+          <li
+            :style="{ borderLeft: `0.3em solid ${type.Color}` }"
+            v-for="(entry, i) in activeSortedNotBoughtEntriesbyType[type.Name]"
+            :key="entry.ID"
+          >
+            <EntryItem
+              v-model="activeSortedNotBoughtEntriesbyType[type.Name][i]"
+              @contextmenu="contextmenuShow($event, entry)"
+              @update="updateEntry(entry)"
+            >
+            </EntryItem>
+          </li>
+        </template>
+
+        <li
+          key="bought"
+          v-if="activeBoughtEntries.length > 0"
+          class="divider bought"
         >
-        </EntryItem>
-        <hr v-if="activeBoughtEntries.length > 0" />
-        <EntryItem
-          v-for="(entry, i) in activeBoughtEntries"
-          :key="entry.ID"
-          v-model="activeBoughtEntries[i]"
-          :types="types"
-          @contextmenu="contextmenuShow($event, entry)"
-          @update="updateEntry(entry)"
-        >
-        </EntryItem>
+          Recently bought
+        </li>
+        <li v-for="(entry, i) in activeBoughtEntries" :key="entry.ID">
+          <EntryItem
+            v-model="activeBoughtEntries[i]"
+            @contextmenu="contextmenuShow($event, entry)"
+            @update="updateEntry(entry)"
+          >
+          </EntryItem>
+        </li>
       </TransitionGroup>
       <Contextmenu
         v-if="contextmenuVisible"
@@ -339,6 +362,13 @@ hr {
   position: absolute;
 }
 
+ul {
+  /* no bullet points */
+  list-style: none;
+  padding: 0em;
+  margin: 0em;
+}
+
 header input {
   flex-grow: 1;
   /* max width possible */
@@ -354,10 +384,22 @@ input {
   background-color: var(--color-surface);
 }
 
-ul {
-  /* no bullet points */
-  list-style: none;
-  padding: 0em;
-  margin: 0em;
+.divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  font-weight: 300;
+}
+
+.bought {
+  margin: 1em 0em;
+}
+
+.divider::before,
+.divider::after {
+  content: "";
+  flex: 1;
+  border-bottom: 0.1em solid #000;
+  margin: 0 0.5em;
 }
 </style>

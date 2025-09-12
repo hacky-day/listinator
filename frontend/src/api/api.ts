@@ -41,6 +41,11 @@ export async function apiCreateEntry(
   return json as Entry;
 }
 
+export async function apiGetEntry(entryID: string): Promise<Entry> {
+  const json = await apiFetchJSON(`/api/v1/entries/${entryID}`);
+  return json as Entry;
+}
+
 export async function apiUpdateEntry(entry: Entry): Promise<Entry> {
   const json = await apiFetchJSON(`/api/v1/entries/${entry.ID}`, {
     method: "PUT",

@@ -63,6 +63,7 @@ func (e *Entry) BeforeCreate(tx *gorm.DB) error {
 }
 
 type Type struct {
-	Name string `gorm:"primaryKey"`
-	Icon string
+	Name  string `gorm:"primaryKey"`
+	Icon  string
+	Color string
 }

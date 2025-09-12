@@ -45,18 +45,18 @@ func Init(dsn string) (*gorm.DB, error) {
 
 	// types to database
 	types := []Type{
-		{Name: "fruit", Icon: "🍎"},
-		{Name: "vegetable", Icon: "🥦"},
-		{Name: "drink", Icon: "🍹"},
-		{Name: "meat", Icon: "🍖"},
-		{Name: "snack", Icon: "🍿"},
-		{Name: "dairy", Icon: "🧀"},
-		{Name: "bread", Icon: "🥖"},
-		{Name: "condiment", Icon: "🧂"},
-		{Name: "frozen", Icon: "❄️"},
-		{Name: "canned", Icon: "🥫"},
-		{Name: "spice", Icon: "🌶️"},
-		{Name: "unknown", Icon: "🤷‍♀️"},
+		{Name: "fruit", Icon: "🍎", Color: "crimson"},
+		{Name: "vegetable", Icon: "🥦", Color: "green"},
+		{Name: "drink", Icon: "🍹", Color: "orange"},
+		{Name: "meat", Icon: "🍖", Color: "red"},
+		{Name: "snack", Icon: "🍿", Color: "yellow"},
+		{Name: "dairy", Icon: "🧀", Color: "gold"},
+		{Name: "bread", Icon: "🥖", Color: "saddlebrown"},
+		{Name: "condiment", Icon: "🧂", Color: "gray"},
+		{Name: "frozen", Icon: "❄️", Color: "lightblue"},
+		{Name: "canned", Icon: "🥫", Color: "silver"},
+		{Name: "spice", Icon: "🌶️", Color: "darkred"},
+		{Name: "unknown", Icon: "🤷‍♀️", Color: "black"},
 	}
 	for _, t := range types {
 		if err := db.Save(&t).Error; err != nil {
