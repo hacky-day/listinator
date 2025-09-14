@@ -12,7 +12,9 @@ import (
 func Init(dsn string) (*gorm.DB, error) {
 	dialector := sqlite.Open(dsn)
 
-	db, err := gorm.Open(dialector, &gorm.Config{})
+	db, err := gorm.Open(dialector, &gorm.Config{
+		Logger: &slogLogger{},
+	})
 	if err != nil {
 		return nil, fmt.Errorf("unable to open database, %w", err)
 	}
