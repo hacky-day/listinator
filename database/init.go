@@ -1,6 +1,7 @@
 package database
 
 import (
+	"context"
 	"fmt"
 	"os"
 
@@ -9,7 +10,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func Init(dsn string) (*gorm.DB, error) {
+func Init(ctx context.Context, dsn string) (*gorm.DB, error) {
 	dialector := sqlite.Open(dsn)
 
 	db, err := gorm.Open(dialector, &gorm.Config{
@@ -19,8 +20,7 @@ func Init(dsn string) (*gorm.DB, error) {
 		return nil, fmt.Errorf("unable to open database, %w", err)
 	}
 
-	err = db.AutoMigrate(&Entry{}, &Type{}, &List{}, &User{})
-	if err != nil {
+	if err := migrate(ctx, db); err != nil {
 		return nil, fmt.Errorf("unable to migrate database models, %w", err)
 	}
 

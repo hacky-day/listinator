@@ -7,6 +7,10 @@ import (
 	"gorm.io/gorm"
 )
 
+type Version struct {
+	gorm.Model
+}
+
 type Model struct {
 	ID        uuid.UUID `gorm:"primaryKey;type=uuid"`
 	CreatedAt time.Time

@@ -33,7 +33,7 @@ func main() {
 	}
 
 	// init database
-	db, err := database.Init(dbPath)
+	db, err := database.Init(context.TODO(), dbPath)
 	if err != nil {
 		panic(err)
 	}
