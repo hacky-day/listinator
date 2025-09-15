@@ -11,7 +11,7 @@ type Model struct {
 	ID        uuid.UUID `gorm:"primaryKey;type=uuid"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
-	DeletedAt gorm.DeletedAt `gorm:"index"`
+	DeletedAt gorm.DeletedAt
 }
 
 func (m *Model) BeforeCreate(tx *gorm.DB) error {
@@ -24,7 +24,7 @@ func (m *Model) BeforeCreate(tx *gorm.DB) error {
 type User struct {
 	Model
 
-	Name         string `gorm:"unique;not null"`
+	Name         string
 	PasswordHash string `json:"-"`
 	IsAdmin      bool
 }

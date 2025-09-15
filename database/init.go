@@ -19,9 +19,13 @@ func Init(dsn string) (*gorm.DB, error) {
 		return nil, fmt.Errorf("unable to open database, %w", err)
 	}
 
-	err = db.AutoMigrate(&Entry{}, &Type{}, &List{}, &User{})
+	sqlDB, err := db.DB()
 	if err != nil {
-		return nil, fmt.Errorf("unable to migrate database models, %w", err)
+		return nil, fmt.Errorf("unable to get *sql.DB from *gorm.DB, %w", err)
+	}
+
+	if err := migrate(sqlDB); err != nil {
+		return nil, fmt.Errorf("migration failed, %w", err)
 	}
 
 	// Create admin user with password or update, if already present.
@@ -42,27 +46,6 @@ func Init(dsn string) (*gorm.DB, error) {
 			if err := db.Create(&admin).Error; err != nil {
 				return nil, fmt.Errorf("unable to create admin, %w", err)
 			}
-		}
-	}
-
-	// types to database
-	types := []Type{
-		{Name: "fruit", Icon: "🍎", Color: "crimson"},
-		{Name: "vegetable", Icon: "🥦", Color: "green"},
-		{Name: "drink", Icon: "🍹", Color: "orange"},
-		{Name: "meat", Icon: "🍖", Color: "red"},
-		{Name: "snack", Icon: "🍿", Color: "yellow"},
-		{Name: "dairy", Icon: "🧀", Color: "gold"},
-		{Name: "bread", Icon: "🥖", Color: "saddlebrown"},
-		{Name: "condiment", Icon: "🧂", Color: "gray"},
-		{Name: "frozen", Icon: "❄️", Color: "lightblue"},
-		{Name: "canned", Icon: "🥫", Color: "silver"},
-		{Name: "spice", Icon: "🌶️", Color: "darkred"},
-		{Name: "unknown", Icon: "🤷‍♀️", Color: "black"},
-	}
-	for _, t := range types {
-		if err := db.Save(&t).Error; err != nil {
-			return nil, fmt.Errorf("unable to create default type '%s' in database, %w", t.Name, err)
 		}
 	}
 

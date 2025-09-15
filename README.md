@@ -110,6 +110,22 @@ The application will be available at <http://localhost:8080>.
 
    The frontend and backend will be served at <http://localhost:8080>.
 
+### Database Migrations
+
+Database migrations are done with [goose](https://github.com/pressly/goose).
+
+This means this project does not use [Gorms Automigration](https://gorm.io/docs/migration.html#Auto-Migration) anymore, but on each database change a new migration needs to be created with
+
+```bash
+goose -dir database/migrations/ create do-something sql
+```
+
+and the migration steps need to be created manually.
+
+We do not support downgrades, so writing the steps for `goose up` should be enough.
+
+Migration scripts are automatically called on boot.
+
 ## Configuration
 
 The application uses the following environment variable:
