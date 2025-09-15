@@ -43,7 +43,7 @@ type Entry struct {
 
 	Bought bool
 
-	TypeID string
+	TypeID uuid.UUID
 	Type   Type `json:"-"`
 
 	ListID uuid.UUID
@@ -56,14 +56,16 @@ func (e *Entry) BeforeCreate(tx *gorm.DB) error {
 	if e.ID == uuid.Nil {
 		e.ID = uuid.New()
 	}
-	if e.TypeID == "" {
-		e.TypeID = "unknown"
+	if e.TypeID == uuid.Nil {
+		e.TypeID = uuid.MustParse("c29ebd85-812e-4cf6-bfc7-c8368eb83334")
 	}
 	return nil
 }
 
 type Type struct {
-	Name  string `gorm:"primaryKey"`
-	Icon  string
-	Color string
+	Model
+
+	Name     string
+	Color    string
+	Priority int
 }

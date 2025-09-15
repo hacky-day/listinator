@@ -47,11 +47,10 @@ onMounted(async () => {
       <ul>
         <li
           v-for="type in types"
-          @click="update(type.Name)"
+          @click="update(type.ID)"
           :style="{ borderLeft: `0.3em solid ${type.Color}` }"
         >
           <div>
-            {{ type.Icon }}
             {{ type.Name }}
           </div>
         </li>
