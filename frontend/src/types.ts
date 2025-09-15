@@ -3,9 +3,11 @@ export interface List {
 }
 
 export interface Type {
+  ID: string;
   Name: string;
-  Icon: string;
+  Immutable: boolean;
   Color: string;
+  Priority: number;
 }
 
 export interface Entry {

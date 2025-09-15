@@ -40,7 +40,7 @@ func (s server) entryCreate() echo.HandlerFunc {
 		Name   string    `json:"Name"`
 		Number string    `json:"Number"`
 		Bought bool      `json:"Bought"`
-		TypeID string    `json:"TypeID"`
+		TypeID uuid.UUID `json:"TypeID"`
 		ListID uuid.UUID `json:"ListID"`
 	}
 	return func(c echo.Context) error {
@@ -92,7 +92,7 @@ func (s server) entryUpdate() echo.HandlerFunc {
 		Name   string    `json:"Name"`
 		Number string    `json:"Number"`
 		Bought bool      `json:"Bought"`
-		TypeID string    `json:"TypeID"`
+		TypeID uuid.UUID `json:"TypeID"`
 		ListID uuid.UUID `json:"ListID"`
 	}
 	return func(c echo.Context) error {

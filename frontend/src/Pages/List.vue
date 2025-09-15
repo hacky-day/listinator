@@ -98,8 +98,8 @@ const activeEntries = computed(() => {
 const activeSortedNotBoughtEntriesbyType = computed(() => {
   const groups: Record<string, Entry[]> = {};
   types.value.forEach((type: Type) => {
-    groups[type.Name] = activeEntries.value
-      .filter((entry: Entry) => !entry.Bought && entry.TypeID === type.Name)
+    groups[type.ID] = activeEntries.value
+      .filter((entry: Entry) => !entry.Bought && entry.TypeID === type.ID)
       .sort((a: Entry, b: Entry) => {
         // Sort by name
         return a.Name.localeCompare(b.Name);
@@ -291,19 +291,19 @@ onUnmounted(() => {
       <TransitionGroup name="list" @before-leave="beforeLeave" tag="ul">
         <template v-for="type in types">
           <div
-            :key="type.Name"
-            v-if="activeSortedNotBoughtEntriesbyType[type.Name].length > 0"
+            :key="type.ID"
+            v-if="activeSortedNotBoughtEntriesbyType[type.ID].length > 0"
             class="divider"
           >
-            {{ type.Icon }} {{ type.Name }}
+            {{ type.Name }}
           </div>
           <li
             :style="{ borderLeft: `0.3em solid ${type.Color}` }"
-            v-for="(entry, i) in activeSortedNotBoughtEntriesbyType[type.Name]"
+            v-for="(entry, i) in activeSortedNotBoughtEntriesbyType[type.ID]"
             :key="entry.ID"
           >
             <EntryItem
-              v-model="activeSortedNotBoughtEntriesbyType[type.Name][i]"
+              v-model="activeSortedNotBoughtEntriesbyType[type.ID][i]"
               @contextmenu="contextmenuShow($event, entry)"
               @update="updateEntry(entry)"
             >
