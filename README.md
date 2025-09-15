@@ -112,11 +112,13 @@ The application will be available at <http://localhost:8080>.
 
 ## Configuration
 
-The application uses the following environment variable:
+The application uses the following environment variables:
 
 - `LISTINATOR_DATABASE_DIR` - Directory where the SQLite database file will be stored (required)
-- `LISTINATOR_SESSION_SECRET` -
-- `LISTINATOR_ADMIN_PASSWORD` -
+- `LISTINATOR_SESSION_SECRET` - Secret key used for session management (required)
+- `LISTINATOR_ADMIN_PASSWORD` - Password for admin access (required)
+- `LISTINATOR_LOG_LEVEL` - Log level for application logging. Options: `debug`, `info`, `warning`, `error`. Defaults to `info`
+- `LISTINATOR_LOG_TYPE` - Log output format. Options: `text`, `json`. Defaults to `text`
 
 ## License
 
