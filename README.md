@@ -74,6 +74,7 @@ The application will be available at <http://localhost:8080>.
 - `main.go` – Application entry point and server setup (Go)
 - `api/` – HTTP handlers and API routes (Go)
 - `database/` – Database models and initialization (Go)
+- `logger/` – Structured logging configuration and initialization (Go)
 - `frontend/` – Vue frontend (source code, build, assets)
 
 ### Frontend Development (Vue)
