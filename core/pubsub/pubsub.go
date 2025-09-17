@@ -3,25 +3,23 @@ package pubsub
 
 import (
 	"fmt"
+	"log/slog"
 	"sync"
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/labstack/echo/v4"
 )
 
 type PubSub[K comparable, T any] struct {
 	buffer int
-	logger echo.Logger
 	m      *sync.Mutex
 	store  map[K]map[uuid.UUID]chan T
 }
 
-func New[K comparable, T any](logger echo.Logger, buffer int) PubSub[K, T] {
+func New[K comparable, T any](buffer int) PubSub[K, T] {
 	return PubSub[K, T]{
 		m:      &sync.Mutex{},
 		store:  map[K]map[uuid.UUID]chan T{},
-		logger: logger,
 		buffer: buffer,
 	}
 }
@@ -54,7 +52,7 @@ func (ps PubSub[K, T]) Publish(k K, t T) error {
 			select {
 			case ch <- t:
 			case <-time.After(100 * time.Millisecond):
-				ps.logger.Errorf("failed to send to sub %v", k)
+				slog.Error("failed to send to sub", "sub", k)
 			}
 			wg.Done()
 		}(k, sub)
