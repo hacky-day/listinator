@@ -4,13 +4,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 
-	"github.com/shaardie/listinator/database"
+	"github.com/shaardie/listinator/core/database"
 )
 
 func (s server) entryList() echo.HandlerFunc {
@@ -47,6 +48,14 @@ func (s server) entryCreate() echo.HandlerFunc {
 		var i input
 		if err := c.Bind(&i); err != nil {
 			return echo.ErrBadRequest.SetInternal(err)
+		}
+
+		if i.TypeID == uuid.Nil && s.typifier != nil {
+			if u, err := s.typifier.GetUUID(i.Name); err != nil {
+				slog.Error("unable to get uuid from typifier", "error", err)
+			} else {
+				i.TypeID = u
+			}
 		}
 
 		e := database.Entry{

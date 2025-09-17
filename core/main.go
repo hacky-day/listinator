@@ -7,9 +7,10 @@ import (
 	"path"
 
 	"github.com/gorilla/sessions"
-	"github.com/shaardie/listinator/api/v1/server"
-	"github.com/shaardie/listinator/database"
-	"github.com/shaardie/listinator/logger"
+	"github.com/shaardie/listinator/core/api/v1/server"
+	"github.com/shaardie/listinator/core/database"
+	"github.com/shaardie/listinator/core/logger"
+	"github.com/shaardie/listinator/core/typifier"
 
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
@@ -30,6 +31,14 @@ func main() {
 	sessionSecret := os.Getenv("LISTINATOR_SESSION_SECRET")
 	if sessionSecret == "" {
 		panic("session secret missing")
+	}
+
+	tp, err := typifier.Init()
+	if err != nil {
+		panic(err)
+	}
+	if tp == nil {
+		slog.Warn("Running without Typifier")
 	}
 
 	// init database
@@ -64,7 +73,7 @@ func main() {
 
 	// API V1
 	apiV1 := e.Group("/api/v1")
-	sV1 := server.New(db, e.Logger)
+	sV1 := server.New(db, tp)
 	sV1.SetupRoutes(apiV1)
 
 	// Embeded Frontend

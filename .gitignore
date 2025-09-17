@@ -1,8 +1,12 @@
 # Go
-/listinator.db
-/listinator
-data/listinator.db
+listinator.db
+listinator
 
 # Vue
 node_modules
 dist
+
+# Python
+venv/
+__pycache__/
+model.pkl
