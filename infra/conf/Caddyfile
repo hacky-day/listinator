@@ -1,0 +1,3 @@
+{$LISTINATOR_ADDRESS} {
+    reverse_proxy core:8080
+}
