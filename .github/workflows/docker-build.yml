@@ -41,13 +41,13 @@ jobs:
             ghcr.io/${{ github.repository_owner }}/listinator-core:${{ github.sha }}
             ${{ github.ref == 'refs/heads/main' && format('ghcr.io/{0}/listinator-core:latest', github.repository_owner) || '' }}
 
-      - name: Build and push listinator-typifier
-        uses: docker/build-push-action@v6
-        with:
-          context: ./typifier
-          file: ./typifier/Dockerfile
-          platforms: linux/amd64,linux/arm64
-          push: true
-          tags: |
-            ghcr.io/${{ github.repository_owner }}/listinator-typifier:${{ github.sha }}
-            ${{ github.ref == 'refs/heads/main' && format('ghcr.io/{0}/listinator-typifier:latest', github.repository_owner) || '' }}
+      # - name: Build and push listinator-typifier
+      #   uses: docker/build-push-action@v6
+      #   with:
+      #     context: ./typifier
+      #     file: ./typifier/Dockerfile
+      #     platforms: linux/amd64,linux/arm64
+      #     push: true
+      #     tags: |
+      #       ghcr.io/${{ github.repository_owner }}/listinator-typifier:${{ github.sha }}
+      #       ${{ github.ref == 'refs/heads/main' && format('ghcr.io/{0}/listinator-typifier:latest', github.repository_owner) || '' }}
