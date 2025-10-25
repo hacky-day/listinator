@@ -125,24 +125,11 @@ async function ensureEntryOnNotBoughtList() {
     return;
   }
 
+  // Create new Entry
   try {
-    // If only one entry matches the filter, reactivate it if bought, otherwise do nothing.
-    if (activeEntries.value.length === 1) {
-      const entry = activeEntries.value[0];
-      if (entry.Bought === false) {
-        return;
-      }
-      entry.Bought = false;
-      await updateEntry(entry);
-      return;
-    }
-
-    // Create new Entry
-    try {
-      await apiCreateEntry(searchInput.value, listID);
-    } catch (error) {
-      show("error", "Unable to create new entry", { logMessage: error });
-    }
+    await apiCreateEntry(searchInput.value, listID);
+  } catch (error) {
+    show("error", "Unable to create new entry", { logMessage: error });
   } finally {
     // Reset input
     searchInput.value = "";
@@ -155,6 +142,9 @@ async function updateEntry(entry: Entry) {
   } catch (error) {
     show("error", "Unable to update entry", { logMessage: error });
     return;
+  } finally {
+    // Reset input
+    searchInput.value = "";
   }
 }
 
@@ -278,63 +268,35 @@ onUnmounted(() => {
   <DefaultLayout>
     <template v-slot:header>
       <ShareButton></ShareButton>
-      <input
-        v-model="searchInput"
-        @keydown.enter="ensureEntryOnNotBoughtList"
-        type="search"
-        autocomplete="off"
-        placeholder="Search"
-      />
+      <input v-model="searchInput" @keydown.enter="ensureEntryOnNotBoughtList" type="search" autocomplete="off"
+        placeholder="Search" />
       <Button @click="ensureEntryOnNotBoughtList" class="inverted">+</Button>
     </template>
     <template v-slot:main>
       <TransitionGroup name="list" @before-leave="beforeLeave" tag="ul">
         <template v-for="type in types">
-          <div
-            :key="type.ID"
-            v-if="activeSortedNotBoughtEntriesbyType[type.ID].length > 0"
-            class="divider"
-          >
+          <div :key="type.ID" v-if="activeSortedNotBoughtEntriesbyType[type.ID].length > 0" class="divider">
             {{ type.Name }}
           </div>
-          <li
-            :style="{ borderLeft: `0.3em solid ${type.Color}` }"
-            v-for="(entry, i) in activeSortedNotBoughtEntriesbyType[type.ID]"
-            :key="entry.ID"
-          >
-            <EntryItem
-              v-model="activeSortedNotBoughtEntriesbyType[type.ID][i]"
-              @contextmenu="contextmenuShow($event, entry)"
-              @update="updateEntry(entry)"
-            >
+          <li :style="{ borderLeft: `0.3em solid ${type.Color}` }"
+            v-for="(entry, i) in activeSortedNotBoughtEntriesbyType[type.ID]" :key="entry.ID">
+            <EntryItem v-model="activeSortedNotBoughtEntriesbyType[type.ID][i]"
+              @contextmenu="contextmenuShow($event, entry)" @update="updateEntry(entry)">
             </EntryItem>
           </li>
         </template>
 
-        <li
-          key="bought"
-          v-if="activeBoughtEntries.length > 0"
-          class="divider bought"
-        >
+        <li key="bought" v-if="activeBoughtEntries.length > 0" class="divider bought">
           Recently bought
         </li>
         <li v-for="(entry, i) in activeBoughtEntries" :key="entry.ID">
-          <EntryItem
-            v-model="activeBoughtEntries[i]"
-            @contextmenu="contextmenuShow($event, entry)"
-            @update="updateEntry(entry)"
-          >
+          <EntryItem v-model="activeBoughtEntries[i]" @contextmenu="contextmenuShow($event, entry)"
+            @update="updateEntry(entry)">
           </EntryItem>
         </li>
       </TransitionGroup>
-      <Contextmenu
-        v-if="contextmenuVisible"
-        id="contextmenu"
-        :x="contextmenuX"
-        :y="contextmenuY"
-        :actions="contextmenuActions"
-        @action="contextmenuHandle"
-      />
+      <Contextmenu v-if="contextmenuVisible" id="contextmenu" :x="contextmenuX" :y="contextmenuY"
+        :actions="contextmenuActions" @action="contextmenuHandle" />
     </template>
   </DefaultLayout>
 </template>
@@ -345,7 +307,8 @@ hr {
   margin: 0.5em 1em;
 }
 
-.list-move, /* apply transition to moving elements */
+.list-move,
+/* apply transition to moving elements */
 .list-enter-active,
 .list-leave-active {
   transition: all 0.5s ease;
