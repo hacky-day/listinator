@@ -6,7 +6,7 @@ Vue frontend of the listinator.
 
 ## Setup (Production)
 
-The frontend is embedded in the core backend.
+The frontend is embedded in the backend.
 
 ## Setup (Development)
 

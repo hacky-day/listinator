@@ -1,15 +1,13 @@
 # Listinator
 
-A simple web-based list management application perfect for shopping lists,
-to-do lists, or any kind of item tracking. Backends are built with Go and
-Python, modern frontend powered by Vue.
+A simple web-based list management application perfect for shopping lists, to-do lists, or any kind of item tracking.
+Backends is built with Go and a modern frontend with Typescript and Vue embeded in the Go Binary for easy deployment.
 
 ---
 
 ## Features
 
 - Go Backend with persistent storage via SQLite
-- Optional machine learning python backend for product type prediction
 - Web interface for managing lists
 
 ## Setup (Production)
@@ -24,32 +22,54 @@ production deployment.
 
 - Go 1.24.3 or later
 - Node.js 18+ and npm
-- Python 3
 - `make`
 
-### Quickstart
+### Quick Start
 
-You can build everything clean with
-
-```bash
-make clean build
-```
-
-If you need the different parts running for development and testing, you can
-just run `make run-*` for the different parts. Just run in different terminals
+Simply run:
 
 ```bash
-make run-core
-make run-typifier
-make run-frontend
+make clean run
 ```
 
-For more information, take a look at the `Readme.md` files for the different parts.
+This will:
 
-## Project Structure
+1. Clean old artifacts
+2. Build the frontend
+3. Build the backend and embed the frontend
+4. Start the backend with proper Configuration for Development
 
-- [`core`](./core/) - Core Backend with embeded Frontend
-- [`typifier`](./typifier/) - Microservice for product type prediction
+## Database Migrations
+
+Database migrations are done with [goose](https://github.com/pressly/goose).
+
+This means this project does not use [Gorms
+Automigration](https://gorm.io/docs/migration.html#Auto-Migration) anymore, but
+on each database change a new migration needs to be created with
+
+```bash
+goose -dir database/migrations/ create do-something sql
+```
+
+and the migration steps need to be created manually.
+
+We do not support downgrades, so writing the steps for `goose up` should be enough.
+
+Migration scripts are automatically called on boot.
+
+## Configuration
+
+The application uses the following environment variables:
+
+- `LISTINATOR_DATABASE_DIR` - Directory where the SQLite database file will be
+  stored (required)
+- `LISTINATOR_SESSION_SECRET` - Secret key used for session management
+  (required)
+- `LISTINATOR_ADMIN_PASSWORD` - Password for admin access (required)
+- `LISTINATOR_LOG_LEVEL` - Log level for application logging. Options: `debug`,
+  `info`, `warning`, `error`. Defaults to `info`
+- `LISTINATOR_LOG_TYPE` - Log output format. Options: `text`, `json`. Defaults
+  to `text`
 
 ## License
 

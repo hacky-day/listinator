@@ -17,28 +17,19 @@ services:
     networks:
       - external
       - internal
-  core:
-    # image: ghcr.io/hacky-day/listinator-core:latest
+  listinator:
+    # image: ghcr.io/hacky-day/listinator:latest
     build:
-      context: ../core
+      context: ../
     restart: unless-stopped
     environment:
       LISTINATOR_DATABASE_DIR: /var/lib/listinator
       LISTINATOR_SESSION_SECRET: changeme
       LISTINATOR_ADMIN_PASSWORD: changeme
-      # LISTINATOR_TYPIFIER_URL: http://typifier:8000
     volumes:
       - listinator_data:/var/lib/listinator
     networks:
       - internal
-  # typifier:
-  #   # image: ghcr.io/hacky-day/listinator-typifier:latest
-  #   build:
-  #     context: ../typifier
-  #   environment:
-  #     UVICORN_HOST: "0.0.0.0"
-  #   networks:
-  #     - internal
 
 volumes:
   caddy_data:
