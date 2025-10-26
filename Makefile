@@ -1,19 +1,18 @@
-.PHONY: all build clean
+.PHONY: all frontend build run clean
+
 all: build
 
-build:
-	$(MAKE) -C core build
-	$(MAKE) -C typifier build
+frontend:
+	$(MAKE) -C frontend build
+
+build: frontend
+	go build -o listinator
+
+run: build
+	LISTINATOR_SESSION_SECRET="secret" LISTINATOR_ADMIN_PASSWORD="secret" LISTINATOR_DATABASE_DIR=. ./listinator
 
 clean:
-	$(MAKE) -C core clean
-	$(MAKE) -C typifier clean
+	rm -rf listinator
+	$(MAKE) -C frontend clean
 
-run-typifier:
-	$(MAKE) -C typifier run
 
-run-core:
-	$(MAKE) -C core run
-
-run-frontend:
-	$(MAKE) -C core/frontend run

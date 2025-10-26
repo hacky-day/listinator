@@ -3,24 +3,20 @@ package server
 import (
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
-	"github.com/shaardie/listinator/core/pubsub"
-	"github.com/shaardie/listinator/core/typifier"
+	"github.com/shaardie/listinator/pubsub"
 	"gorm.io/gorm"
 )
 
 type server struct {
 	db *gorm.DB
 
-	typifier *typifier.Typifier
-
 	// Entry
 	entryPubSub pubsub.PubSub[uuid.UUID, entryEvent]
 }
 
-func New(db *gorm.DB, tp *typifier.Typifier) server {
+func New(db *gorm.DB) server {
 	return server{
 		db:          db,
-		typifier:    tp,
 		entryPubSub: pubsub.New[uuid.UUID, entryEvent](16),
 	}
 }

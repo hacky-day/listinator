@@ -6,7 +6,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
-	"github.com/shaardie/listinator/core/database"
+	"github.com/shaardie/listinator/database"
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/gorilla/sessions"

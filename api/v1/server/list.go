@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	"github.com/shaardie/listinator/core/database"
+	"github.com/shaardie/listinator/database"
 )
 
 func (s server) listCreate() echo.HandlerFunc {

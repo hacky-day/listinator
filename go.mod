@@ -1,4 +1,4 @@
-module github.com/shaardie/listinator/core
+module github.com/shaardie/listinator
 
 go 1.24
 
