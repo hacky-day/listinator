@@ -33,7 +33,7 @@ const contextmenuVisible = ref(false);
 const contextmenuX = ref(0);
 const contextmenuY = ref(0);
 const contextmenuActions = [
-  { label: "Select Type", action: "selectType" },
+  { label: "Edit", action: "edit" },
   { label: "Delete", action: "delete" },
 ] as ContextmenuAction[];
 const contextmenuTarget = ref<Entry>();
@@ -84,8 +84,8 @@ function contextmenuHandle(action: string) {
       show("error", "Unable to delete entry", { logMessage: error });
       return;
     }
-  } else if (action === "selectType") {
-    router.push({ name: "typeSelector", params: { id: targetEntry.ID } });
+  } else if (action === "edit") {
+    router.push({ name: "entryEditor", params: { id: targetEntry.ID } });
   }
 }
 
