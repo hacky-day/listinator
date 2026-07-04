@@ -216,7 +216,14 @@ func (s server) entryGetEvents() echo.HandlerFunc {
 					return echo.ErrInternalServerError.SetInternal(fmt.Errorf("failed to ping, %w", err))
 				}
 			// receive data from pubsub channel and send them to the client
-			case ee := <-ch:
+			case ee, ok := <-ch:
+				// channel was closed because we could not keep up (see
+				// pubsub.Publish); end the stream so the client notices and
+				// reconnects with a fresh full sync instead of busy-looping
+				// on the now permanently-ready closed channel.
+				if !ok {
+					return echo.ErrInternalServerError.SetInternal(errors.New("disconnected, too slow to keep up with events"))
+				}
 				entry, err := json.Marshal(ee.Entry)
 				if err != nil {
 					return echo.ErrInternalServerError.SetInternal(fmt.Errorf("failed to marshal JSON, %w", err))

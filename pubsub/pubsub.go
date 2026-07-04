@@ -46,18 +46,32 @@ func (ps PubSub[K, T]) Publish(k K, t T) error {
 
 	// Send to all subs parallel and with timeout
 	var wg sync.WaitGroup
+	var muStale sync.Mutex
+	stale := []uuid.UUID{}
 	wg.Add(len(subs))
-	for k, sub := range subs {
-		go func(k uuid.UUID, ch chan T) {
+	for id, sub := range subs {
+		go func(id uuid.UUID, ch chan T) {
+			defer wg.Done()
 			select {
 			case ch <- t:
 			case <-time.After(100 * time.Millisecond):
-				slog.Error("failed to send to sub", "sub", k)
+				slog.Error("subscriber too slow to keep up, disconnecting it", "sub", id)
+				muStale.Lock()
+				stale = append(stale, id)
+				muStale.Unlock()
 			}
-			wg.Done()
-		}(k, sub)
+		}(id, sub)
 	}
 	wg.Wait()
+
+	// A subscriber that could not keep up would otherwise silently miss this
+	// event forever. Disconnect it instead, so its SSE handler returns, the
+	// client's EventSource sees the closed connection and reconnects, and a
+	// full resync (see entryList) picks up whatever was missed.
+	for _, id := range stale {
+		close(subs[id])
+		delete(subs, id)
+	}
 	return nil
 }
 
@@ -87,6 +101,14 @@ func (ps PubSub[K, T]) Unsubscribe(k K, id uuid.UUID) {
 	if !ok {
 		return
 	}
-	close(subs[id])
+
+	// Publish may already have disconnected this subscriber (slow consumer),
+	// in which case it is no longer in subs. Closing a nil/missing channel
+	// again would panic, so only close it if it is still there.
+	ch, ok := subs[id]
+	if !ok {
+		return
+	}
+	close(ch)
 	delete(subs, id)
 }
