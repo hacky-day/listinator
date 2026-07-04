@@ -21,8 +21,6 @@ import Contextmenu from "@/Components/Contextmenu.vue";
 
 const { show, clear } = useNotificationManager();
 
-let failureMessage: string | undefined = undefined;
-
 const route = useRoute();
 const listID = route.params.id as string;
 const entries = ref<Entry[]>([]);
@@ -148,10 +146,67 @@ async function updateEntry(entry: Entry) {
   }
 }
 
+// connectionIssue tracks the notification shown while the connection is down,
+// so repeated failures do not stack multiple toasts and we can clear it once
+// things recover.
+let connectionIssue: string | undefined = undefined;
+function reportConnectionIssue(error?: unknown) {
+  if (connectionIssue === undefined) {
+    connectionIssue = show("error", "Connection lost, trying to reconnect", {
+      logMessage: error,
+      autoHide: false,
+    }).id;
+  }
+}
+function clearConnectionIssue() {
+  if (connectionIssue !== undefined) {
+    clear(connectionIssue);
+    connectionIssue = undefined;
+    show("info", "Connection restored");
+  }
+}
+
+// reconnectDelay grows with each consecutive failure (up to a cap) so a
+// prolonged outage does not hammer the server/battery with retries every
+// second. It resets whenever a connection attempt succeeds or an external
+// signal (tab becomes visible, browser reports back online) suggests it is
+// worth trying again right away.
+const BASE_RECONNECT_DELAY = 1_000;
+const MAX_RECONNECT_DELAY = 30_000;
+let reconnectDelay = BASE_RECONNECT_DELAY;
+let restartTimeout = <number | null>null;
+
+function restart(error?: unknown) {
+  reportConnectionIssue(error);
+  if (restartTimeout !== null) {
+    return;
+  }
+  restartTimeout = setTimeout(() => {
+    restartTimeout = null;
+    start();
+  }, reconnectDelay);
+  reconnectDelay = Math.min(reconnectDelay * 2, MAX_RECONNECT_DELAY);
+}
+
+// forceReconnect cancels any pending backoff wait and reconnects immediately.
+// Used when we have a good reason to believe the connection can work again
+// (tab became visible, browser fired an "online" event).
+function forceReconnect() {
+  if (restartTimeout !== null) {
+    clearTimeout(restartTimeout);
+    restartTimeout = null;
+  }
+  reconnectDelay = BASE_RECONNECT_DELAY;
+  start();
+}
+
 // eventSourceTimeout is to prevent a connection without any traffic being keeps open. The server should send a ping every 5 seconds
 let eventSourceTimeout = <number | null>null;
 function createEventSourceTimeout() {
-  eventSourceTimeout = setTimeout(restart, 15_000);
+  eventSourceTimeout = setTimeout(
+    () => restart("no ping received in time"),
+    15_000,
+  );
 }
 function deleteEventSourceTimeout() {
   if (eventSourceTimeout !== null) {
@@ -173,8 +228,7 @@ function createEventSource() {
 
   // Do not use the SSE Reconnection, because it works different on all browser
   eventSource.onerror = (event) => {
-    console.log(event);
-    restart();
+    restart(event);
   };
   eventSource.addEventListener("ping", () => {
     resetEventSourceTimeout();
@@ -209,40 +263,36 @@ function deleteEventSource() {
   }
 }
 
+// starting guards against concurrent start() calls racing each other, e.g.
+// when a scheduled restart fires at the same time the tab becomes visible.
+let starting = false;
 async function start() {
-  // Clear Event Source
-  deleteEventSource();
-
-  // Get all entries initially
-  try {
-    const newEntries = await apiGetEntries(listID);
-    entries.value = newEntries;
-  } catch (error) {
-    // if it's the first failure, show a message and do not remove it automatically
-    if (failureMessage === undefined) {
-      failureMessage = show("error", "Unable to load entries", {
-        logMessage: error,
-        autoHide: false,
-      }).id;
-    }
-
-    restart();
+  if (starting) {
     return;
   }
+  starting = true;
+  try {
+    // Clear Event Source
+    deleteEventSource();
 
-  // remove the failure and show a short notice that loading is working again
-  if (failureMessage !== undefined) {
-    clear(failureMessage);
-    failureMessage = undefined;
-    show("info", "Entries loaded again");
+    // Get all entries initially
+    try {
+      const newEntries = await apiGetEntries(listID);
+      entries.value = newEntries;
+    } catch (error) {
+      restart(error);
+      return;
+    }
+
+    // connection is working again, clear any lingering notice
+    clearConnectionIssue();
+    reconnectDelay = BASE_RECONNECT_DELAY;
+
+    // Create Event Source to get updates
+    createEventSource();
+  } finally {
+    starting = false;
   }
-
-  // Create Event Source to get updates
-  createEventSource();
-}
-
-function restart() {
-  setTimeout(start, 1000);
 }
 
 // beforeLeave fixes the width of the element before the transition leave is
@@ -255,12 +305,38 @@ function beforeLeave(el: Element) {
   (el as HTMLElement).style.width = width;
 }
 
+// handleVisibilityChange reconnects right away when the tab/app becomes
+// visible again. Mobile browsers commonly freeze timers and drop network
+// connections while backgrounded, so waiting for the regular timeout/backoff
+// would otherwise leave the view stuck until the user restarts the app.
+function handleVisibilityChange() {
+  if (document.visibilityState === "visible") {
+    forceReconnect();
+  }
+}
+function handleOnline() {
+  forceReconnect();
+}
+function handleOffline() {
+  reportConnectionIssue("browser reported offline");
+}
+
 onMounted(() => {
   getTypes();
   start();
+  document.addEventListener("visibilitychange", handleVisibilityChange);
+  window.addEventListener("online", handleOnline);
+  window.addEventListener("offline", handleOffline);
 });
 onUnmounted(() => {
   deleteEventSource();
+  if (restartTimeout !== null) {
+    clearTimeout(restartTimeout);
+    restartTimeout = null;
+  }
+  document.removeEventListener("visibilitychange", handleVisibilityChange);
+  window.removeEventListener("online", handleOnline);
+  window.removeEventListener("offline", handleOffline);
 });
 </script>
 
