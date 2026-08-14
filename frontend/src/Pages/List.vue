@@ -11,6 +11,7 @@ import {
 } from "@/api/api.ts";
 import { router } from "@/router.ts";
 import { useNotificationManager } from "@/composables/useNotificationManager";
+import { locale, t, translateType } from "@/i18n";
 import { type Entry, type Type, type ContextmenuAction } from "@/types.ts";
 
 import DefaultLayout from "@/Layouts/DefaultLayout.vue";
@@ -30,10 +31,12 @@ const searchInput = ref<string>("");
 const contextmenuVisible = ref(false);
 const contextmenuX = ref(0);
 const contextmenuY = ref(0);
-const contextmenuActions = [
-  { label: "Edit", action: "edit" },
-  { label: "Delete", action: "delete" },
-] as ContextmenuAction[];
+// Computed, so the labels follow a language switch instead of being frozen at
+// the language active during the first render.
+const contextmenuActions = computed<ContextmenuAction[]>(() => [
+  { label: t("common.edit"), action: "edit" },
+  { label: t("common.delete"), action: "delete" },
+]);
 const contextmenuTarget = ref<Entry>();
 
 function contextmenuShow(event: MouseEvent, entry: Entry) {
@@ -79,7 +82,7 @@ function contextmenuHandle(action: string) {
         (entry) => targetEntry.ID !== entry?.ID,
       );
     } catch (error) {
-      show("error", "Unable to delete entry", { logMessage: error });
+      show("error", t("list.errorDeleteEntry"), { logMessage: error });
       return;
     }
   } else if (action === "edit") {
@@ -99,8 +102,8 @@ const activeSortedNotBoughtEntriesbyType = computed(() => {
     groups[type.ID] = activeEntries.value
       .filter((entry: Entry) => !entry.Bought && entry.TypeID === type.ID)
       .sort((a: Entry, b: Entry) => {
-        // Sort by name
-        return a.Name.localeCompare(b.Name);
+        // Sort by name, using the collation rules of the active language
+        return a.Name.localeCompare(b.Name, locale.value);
       });
   });
   return groups;
@@ -114,7 +117,7 @@ async function getTypes() {
   try {
     types.value = await apiGetTypes();
   } catch (error) {
-    show("error", "Unable to load entry types", { logMessage: error });
+    show("error", t("list.errorLoadTypes"), { logMessage: error });
   }
 }
 
@@ -127,7 +130,7 @@ async function ensureEntryOnNotBoughtList() {
   try {
     await apiCreateEntry(searchInput.value, listID);
   } catch (error) {
-    show("error", "Unable to create new entry", { logMessage: error });
+    show("error", t("list.errorCreateEntry"), { logMessage: error });
   } finally {
     // Reset input
     searchInput.value = "";
@@ -138,7 +141,7 @@ async function updateEntry(entry: Entry) {
   try {
     await apiUpdateEntry(entry);
   } catch (error) {
-    show("error", "Unable to update entry", { logMessage: error });
+    show("error", t("list.errorUpdateEntry"), { logMessage: error });
     return;
   } finally {
     // Reset input
@@ -152,7 +155,7 @@ async function updateEntry(entry: Entry) {
 let connectionIssue: string | undefined = undefined;
 function reportConnectionIssue(error?: unknown) {
   if (connectionIssue === undefined) {
-    connectionIssue = show("error", "Connection lost, trying to reconnect", {
+    connectionIssue = show("error", t("list.connectionLost"), {
       logMessage: error,
       autoHide: false,
     }).id;
@@ -162,7 +165,7 @@ function clearConnectionIssue() {
   if (connectionIssue !== undefined) {
     clear(connectionIssue);
     connectionIssue = undefined;
-    show("info", "Connection restored");
+    show("info", t("list.connectionRestored"));
   }
 }
 
@@ -345,14 +348,14 @@ onUnmounted(() => {
     <template v-slot:header>
       <ShareButton></ShareButton>
       <input v-model="searchInput" @keydown.enter="ensureEntryOnNotBoughtList" type="search" autocomplete="off"
-        placeholder="Search" />
+        :placeholder="t('list.search')" />
       <Button @click="ensureEntryOnNotBoughtList" class="inverted">+</Button>
     </template>
     <template v-slot:main>
       <TransitionGroup name="list" @before-leave="beforeLeave" tag="ul">
         <template v-for="type in types">
           <div :key="type.ID" v-if="activeSortedNotBoughtEntriesbyType[type.ID].length > 0" class="divider">
-            {{ type.Name }}
+            {{ translateType(type) }}
           </div>
           <li :style="{ borderLeft: `0.3em solid ${type.Color}` }"
             v-for="(entry, i) in activeSortedNotBoughtEntriesbyType[type.ID]" :key="entry.ID">
@@ -363,7 +366,7 @@ onUnmounted(() => {
         </template>
 
         <li key="bought" v-if="activeBoughtEntries.length > 0" class="divider bought">
-          Recently bought
+          {{ t("list.recentlyBought") }}
         </li>
         <li v-for="(entry, i) in activeBoughtEntries" :key="entry.ID">
           <EntryItem v-model="activeBoughtEntries[i]" @contextmenu="contextmenuShow($event, entry)"
@@ -411,6 +414,10 @@ ul {
 header input {
   flex-grow: 1;
   /* max width possible */
+
+  /* Flex items do not shrink below their intrinsic width by default, which
+     makes the header overflow on narrow screens. */
+  min-width: 0;
 }
 
 input {

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useNotificationManager } from "@/composables/useNotificationManager";
+import { t } from "@/i18n";
 
 const { show } = useNotificationManager();
 
@@ -16,9 +17,9 @@ async function share() {
       return;
     }
     await navigator.clipboard.writeText(window.location.href);
-    show("info", "URL copied to clipboard successfully");
+    show("info", t("share.copied"));
   } catch (error) {
-    show("error", "Unable to share link", { logMessage: error });
+    show("error", t("share.failed"), { logMessage: error });
   }
 }
 </script>

@@ -1,0 +1,62 @@
+import type { Messages } from "./en";
+
+export const de: Messages = {
+  common: {
+    name: "Name",
+    login: "Anmelden",
+    logout: "Abmelden",
+    done: "Fertig",
+    edit: "Bearbeiten",
+    delete: "Löschen",
+    language: "Sprache",
+  },
+  home: {
+    newListGuest: "Neue Liste als Gast",
+    errorCreateList: "Neue Liste kann nicht erstellt werden",
+  },
+  login: {
+    title: "Listinator - Anmeldung",
+    password: "Passwort",
+    failed: "Anmeldung fehlgeschlagen. Bitte Zugangsdaten prüfen.",
+  },
+  list: {
+    search: "Suchen",
+    recentlyBought: "Zuletzt gekauft",
+    errorCreateEntry: "Eintrag kann nicht erstellt werden",
+    errorUpdateEntry: "Eintrag kann nicht aktualisiert werden",
+    errorDeleteEntry: "Eintrag kann nicht gelöscht werden",
+    errorLoadTypes: "Kategorien können nicht geladen werden",
+    connectionLost: "Verbindung verloren, versuche erneut zu verbinden",
+    connectionRestored: "Verbindung wiederhergestellt",
+  },
+  entryEditor: {
+    title: "Eintrag bearbeiten",
+    number: "Menge",
+    type: "Kategorie",
+    errorUpdateEntry: "Eintrag kann nicht aktualisiert werden",
+    errorLoad: "Keine Verbindung zum Server",
+  },
+  share: {
+    copied: "URL in die Zwischenablage kopiert",
+    failed: "Link kann nicht geteilt werden",
+  },
+  types: {
+    misc: "📦 Sonstiges",
+    "fruit-vegetables-nuts": "🍎 Obst & Gemüse & Nüsse",
+    "canned-goods": "🥫 Konserven",
+    "sauces-spices-dressings": "🌶️ Saucen & Gewürze & Dressings",
+    "drinks-alcohol": "🍹 Getränke & Alkohol",
+    bakery: "🥖 Backwaren",
+    spreads: "🥜 Aufstriche",
+    "coffee-tea": "☕ Kaffee & Tee",
+    "cereals-muesli": "🥣 Cerealien & Müsli",
+    "pasta-rice": "🍝 Nudeln & Reis",
+    "cooking-baking": "🍳 Kochen & Backen",
+    "meat-fish": "🍖 Fleisch & Fisch",
+    frozen: "❄️ Tiefkühl",
+    "dairy-chilled": "🧀 Milchprodukte & Kühlregal",
+    "sweets-snacks": "🍬 Süßes & Snacks",
+    "household-baby-pets": "🏠 Haushalt & Baby & Tiere",
+    "ready-meals-broth-sauce": "🍲 Fertiggerichte & Brühe & Sauce",
+  },
+};

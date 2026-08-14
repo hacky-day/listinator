@@ -5,6 +5,7 @@ export interface List {
 export interface Type {
   ID: string;
   Name: string;
+  Slug: string;
   Immutable: boolean;
   Color: string;
   Priority: number;

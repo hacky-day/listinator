@@ -65,7 +65,10 @@ func (e *Entry) BeforeCreate(tx *gorm.DB) error {
 type Type struct {
 	Model
 
-	Name     string
+	Name string
+	// Slug is a stable, language independent identifier used by the frontend
+	// to look up a translated name for this type.
+	Slug     string
 	Color    string
 	Priority int
 }

@@ -7,6 +7,7 @@ import DefaultLayout from "@/Layouts/DefaultLayout.vue";
 import Button from "@/Components/Button.vue";
 import { apiCreateSession } from "@/api/api";
 import { useNotificationManager } from "@/composables/useNotificationManager";
+import { t } from "@/i18n";
 
 const { show } = useNotificationManager();
 
@@ -19,11 +20,7 @@ async function login(event: Event) {
     await apiCreateSession(username.value, password.value);
     router.push({ name: "home" });
   } catch (error) {
-    show(
-      "error",
-      "Login failed. Please check your credentials and try again.",
-      { logMessage: error },
-    );
+    show("error", t("login.failed"), { logMessage: error });
   }
 }
 </script>
@@ -31,23 +28,23 @@ async function login(event: Event) {
 <template>
   <DefaultLayout>
     <template v-slot:header>
-      <h1>Listinator - Login</h1>
+      <h1>{{ t("login.title") }}</h1>
     </template>
     <template v-slot:main>
       <form id="loginForm">
         <input
           type="text"
           id="nameInput"
-          placeholder="Name"
+          :placeholder="t('common.name')"
           v-model="username"
         />
         <input
           type="password"
           id="passwordInput"
-          placeholder="Password"
+          :placeholder="t('login.password')"
           v-model="password"
         />
-        <Button @click="login" type="submit">Login</Button>
+        <Button @click="login" type="submit">{{ t("common.login") }}</Button>
       </form>
     </template>
   </DefaultLayout>

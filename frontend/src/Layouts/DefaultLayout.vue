@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import NotificationBanner from "@/Components/NotificationBanner.vue";
+import LanguageSwitcher from "@/Components/LanguageSwitcher.vue";
 </script>
 
 <template>
   <NotificationBanner />
   <header>
     <slot name="header"></slot>
+    <!-- Part of the layout, so the language can be changed from every page -->
+    <LanguageSwitcher />
   </header>
   <main>
     <slot name="main"></slot>
@@ -70,5 +73,11 @@ header {
   justify-content: space-between;
   align-items: center;
   gap: 0.5em;
+}
+
+/* Let the title take the free space, so the actions of a page and the language
+   switcher stay together on the right instead of being spread out. */
+header h1 {
+  flex: 1;
 }
 </style>

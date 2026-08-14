@@ -6,6 +6,7 @@ import { apiGetEntry, apiGetTypes, apiUpdateEntry } from "@/api/api";
 import type { Entry, Type } from "@/types";
 import { router } from "@/router.ts";
 import { useNotificationManager } from "@/composables/useNotificationManager";
+import { t, translateType } from "@/i18n";
 
 import DefaultLayout from "@/Layouts/DefaultLayout.vue";
 import Button from "@/Components/Button.vue";
@@ -24,7 +25,7 @@ async function save() {
   try {
     await apiUpdateEntry(entry.value);
   } catch (error) {
-    show("error", "Unable to update entry", { logMessage: error });
+    show("error", t("entryEditor.errorUpdateEntry"), { logMessage: error });
   }
 }
 
@@ -41,20 +42,22 @@ onMounted(async () => {
     entry.value = await apiGetEntry(entryID);
     types.value = await apiGetTypes();
   } catch (error) {
-    show("error", "unable to connect to server", { logMessage: error });
+    show("error", t("entryEditor.errorLoad"), { logMessage: error });
   }
 });
 </script>
 <template>
   <DefaultLayout>
     <template v-slot:header>
-      <h1>Edit Entry</h1>
-      <Button class="inverted" @click="router.back()">Done</Button>
+      <h1>{{ t("entryEditor.title") }}</h1>
+      <Button class="inverted" @click="router.back()">{{
+        t("common.done")
+      }}</Button>
     </template>
     <template v-slot:main>
       <template v-if="entry">
         <label>
-          Name
+          {{ t("common.name") }}
           <input
             v-model="entry.Name"
             type="text"
@@ -63,7 +66,7 @@ onMounted(async () => {
           />
         </label>
         <label>
-          Number
+          {{ t("entryEditor.number") }}
           <input
             v-model="entry.Number"
             type="text"
@@ -71,7 +74,7 @@ onMounted(async () => {
             @keydown.enter="save"
           />
         </label>
-        <div class="typeLabel">Type</div>
+        <div class="typeLabel">{{ t("entryEditor.type") }}</div>
         <ul>
           <li
             v-for="type in types"
@@ -81,7 +84,7 @@ onMounted(async () => {
             :style="{ borderLeft: `0.3em solid ${type.Color}` }"
           >
             <div>
-              {{ type.Name }}
+              {{ translateType(type) }}
             </div>
           </li>
         </ul>

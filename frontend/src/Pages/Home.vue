@@ -8,6 +8,7 @@ import { router } from "@/router.ts";
 import { type List } from "@/types.ts";
 import { onMounted, ref } from "vue";
 import { useNotificationManager } from "@/composables/useNotificationManager";
+import { t } from "@/i18n";
 
 const { show } = useNotificationManager();
 
@@ -23,7 +24,7 @@ async function listAsGuest() {
       params: { id: list.ID },
     });
   } catch (error) {
-    show("error", "Unable to create a new list", { logMessage: error });
+    show("error", t("home.errorCreateList"), { logMessage: error });
   }
 }
 
@@ -54,9 +55,11 @@ onMounted(async () => {
     </template>
     <template v-slot:main>
       <VerticalMenu v-if="loaded">
-        <Button @click="listAsGuest">New List as Guest</Button>
-        <LinkButton v-if="!loggedIn" to="/login">Login</LinkButton>
-        <Button v-if="loggedIn" @click="logout">Logout</Button>
+        <Button @click="listAsGuest">{{ t("home.newListGuest") }}</Button>
+        <LinkButton v-if="!loggedIn" to="/login">{{
+          t("common.login")
+        }}</LinkButton>
+        <Button v-if="loggedIn" @click="logout">{{ t("common.logout") }}</Button>
       </VerticalMenu>
     </template>
   </DefaultLayout>
