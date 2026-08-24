@@ -9,10 +9,12 @@ export const en = {
     edit: "Edit",
     delete: "Delete",
     language: "Language",
+    offline: "Offline",
   },
   home: {
     newListGuest: "New List as Guest",
     errorCreateList: "Unable to create a new list",
+    offlineCreateList: "Creating a new list needs a network connection",
   },
   login: {
     title: "Listinator - Login",
@@ -26,8 +28,6 @@ export const en = {
     errorUpdateEntry: "Unable to update entry",
     errorDeleteEntry: "Unable to delete entry",
     errorLoadTypes: "Unable to load entry types",
-    connectionLost: "Connection lost, trying to reconnect",
-    connectionRestored: "Connection restored",
   },
   entryEditor: {
     title: "Edit Entry",

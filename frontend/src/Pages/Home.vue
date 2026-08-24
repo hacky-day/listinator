@@ -8,14 +8,22 @@ import { router } from "@/router.ts";
 import { type List } from "@/types.ts";
 import { onMounted, ref } from "vue";
 import { useNotificationManager } from "@/composables/useNotificationManager";
+import { useConnectivity } from "@/composables/useConnectivity";
 import { t } from "@/i18n";
 
 const { show } = useNotificationManager();
+const { isOnline } = useConnectivity();
 
 const loggedIn = ref<boolean>(false);
 const loaded = ref<boolean>(false);
 
 async function listAsGuest() {
+  // Creating a list always hits the server (there's no offline-created-list
+  // flow), so tell the user upfront instead of letting the fetch fail.
+  if (!isOnline.value) {
+    show("error", t("home.offlineCreateList"));
+    return;
+  }
   try {
     const list = await apiCreateList({} as List);
 

@@ -47,6 +47,13 @@ type Entry struct {
 	Type   Type `json:"-"`
 
 	ListID uuid.UUID
+
+	// ClientUpdatedAt is when the user actually made the edit, as opposed to
+	// UpdatedAt (server-write time). It drives edit-time last-write-wins for
+	// offline clients replaying queued writes: a pointer so rows written
+	// before this column existed, and payloads from older/non-offline-aware
+	// clients, have no value to compare against and always accept the write.
+	ClientUpdatedAt *time.Time
 }
 
 func (e *Entry) BeforeCreate(tx *gorm.DB) error {

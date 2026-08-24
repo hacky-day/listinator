@@ -1,13 +1,16 @@
 <script setup lang="ts">
 import NotificationBanner from "@/Components/NotificationBanner.vue";
 import LanguageSwitcher from "@/Components/LanguageSwitcher.vue";
+import ConnectivityIndicator from "@/Components/ConnectivityIndicator.vue";
 </script>
 
 <template>
   <NotificationBanner />
   <header>
     <slot name="header"></slot>
-    <!-- Part of the layout, so the language can be changed from every page -->
+    <!-- Part of the layout, so connectivity state and the language switcher
+         are visible from every page -->
+    <ConnectivityIndicator />
     <LanguageSwitcher />
   </header>
   <main>

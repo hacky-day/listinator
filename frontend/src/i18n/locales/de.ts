@@ -9,10 +9,12 @@ export const de: Messages = {
     edit: "Bearbeiten",
     delete: "Löschen",
     language: "Sprache",
+    offline: "Offline",
   },
   home: {
     newListGuest: "Neue Liste als Gast",
     errorCreateList: "Neue Liste kann nicht erstellt werden",
+    offlineCreateList: "Eine neue Liste zu erstellen erfordert eine Internetverbindung",
   },
   login: {
     title: "Listinator - Anmeldung",
@@ -26,8 +28,6 @@ export const de: Messages = {
     errorUpdateEntry: "Eintrag kann nicht aktualisiert werden",
     errorDeleteEntry: "Eintrag kann nicht gelöscht werden",
     errorLoadTypes: "Kategorien können nicht geladen werden",
-    connectionLost: "Verbindung verloren, versuche erneut zu verbinden",
-    connectionRestored: "Verbindung wiederhergestellt",
   },
   entryEditor: {
     title: "Eintrag bearbeiten",

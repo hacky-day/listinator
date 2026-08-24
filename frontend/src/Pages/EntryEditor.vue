@@ -2,30 +2,42 @@
 import { onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
 
-import { apiGetEntry, apiGetTypes, apiUpdateEntry } from "@/api/api";
-import type { Entry, Type } from "@/types";
+import { apiGetEntry } from "@/api/api";
+import { getEntryLocal, putEntry } from "@/offline/db";
+import type { Entry } from "@/types";
 import { router } from "@/router.ts";
 import { useNotificationManager } from "@/composables/useNotificationManager";
+import { useEntries } from "@/composables/useEntries";
+import { useTypes } from "@/composables/useTypes";
+import { useConnectivity } from "@/composables/useConnectivity";
 import { t, translateType } from "@/i18n";
 
 import DefaultLayout from "@/Layouts/DefaultLayout.vue";
 import Button from "@/Components/Button.vue";
 
 const { show } = useNotificationManager();
+const { types, refresh: refreshTypes } = useTypes();
+const { isOnline } = useConnectivity();
 const route = useRoute();
 const entryID = route.params.id as string;
 
 const entry = ref<Entry>();
-const types = ref<Type[]>();
+// syncEntry is bound once the entry (and thus its ListID) has loaded, so we
+// share the same reactive cache/outbox that List.vue uses for this list.
+let syncEntry: ((entry: Entry) => Promise<void>) | undefined;
 
 async function save() {
-  if (entry.value === undefined) {
+  if (entry.value === undefined || syncEntry === undefined) {
     return;
   }
   try {
-    await apiUpdateEntry(entry.value);
+    await syncEntry(entry.value);
   } catch (error) {
-    show("error", t("entryEditor.errorUpdateEntry"), { logMessage: error });
+    // A failed write while already known offline is expected and gets
+    // queued once reconnected, not worth interrupting the user for.
+    if (isOnline.value) {
+      show("error", t("entryEditor.errorUpdateEntry"), { logMessage: error });
+    }
   }
 }
 
@@ -38,11 +50,24 @@ async function selectType(typeID: string) {
 }
 
 onMounted(async () => {
+  // Show whatever is cached locally first, so an offline visit still has
+  // something to render instead of a blank page.
+  const cached = await getEntryLocal(entryID);
+  if (cached !== undefined) {
+    entry.value = cached;
+    syncEntry = useEntries(cached.ListID).updateEntry;
+  }
+
   try {
-    entry.value = await apiGetEntry(entryID);
-    types.value = await apiGetTypes();
+    const fresh = await apiGetEntry(entryID);
+    entry.value = fresh;
+    syncEntry = useEntries(fresh.ListID).updateEntry;
+    await putEntry(fresh);
+    await refreshTypes();
   } catch (error) {
-    show("error", t("entryEditor.errorLoad"), { logMessage: error });
+    if (entry.value === undefined) {
+      show("error", t("entryEditor.errorLoad"), { logMessage: error });
+    }
   }
 });
 </script>

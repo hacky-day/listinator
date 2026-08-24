@@ -11,6 +11,10 @@ export default mergeConfig(
     test: {
       environment: "node",
       include: ["src/**/__tests__/**/*.test.ts"],
+      // Polyfills the indexedDB global (absent in the "node" environment)
+      // for src/offline's tests, which exercise real idb transactions
+      // rather than mocking storage out.
+      setupFiles: ["src/offline/__tests__/setup.ts"],
       root: fileURLToPath(new URL("./", import.meta.url)),
     },
   }),
